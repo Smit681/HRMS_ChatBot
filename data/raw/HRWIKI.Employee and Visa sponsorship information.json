@@ -1,0 +1,581 @@
+[{
+  "_id": {
+    "$oid": "680282ad320e3bb14c34667f"
+  },
+  "employeeid": 1503,
+  "summary": "Employee joined on 2024-08-05 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $135000.0. Health Insurance: True, 401k: True. Current Position: Technical Project Manager, Assignment: Client. Termination Date: NaT.Visa type: Citizen (nan): Entry to US: 2010-06-06, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346680"
+  },
+  "employeeid": 1504,
+  "summary": "Employee joined on 2022-04-12 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $155000.0. Health Insurance: True, 401k: True. Current Position: Technical Project Manager, Assignment: Internal. Termination Date: NaT.Visa type: Green Card (nan): Entry to US: 2019-06-09, Start Dates: 2023-01-29 19:00:00, End Dates: 2033-01-29 19:00:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346693"
+  },
+  "employeeid": 1527,
+  "summary": "Employee joined on 2020-01-16 00:00:00, working as a None. Pay Type: None - None of $nan. Health Insurance: None, 401k: None. Current Position: None, Assignment: None. Termination Date: NaT.Visa type: OPT (nan): Entry to US: None, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346694"
+  },
+  "employeeid": 1528,
+  "summary": "Employee joined on 2017-03-01 00:00:00, working as a None. Pay Type: None - None of $nan. Health Insurance: None, 401k: None. Current Position: None, Assignment: None. Termination Date: NaT.Visa type: CPT (Complete): Entry to US: None, Start Dates: NaT, End Dates: 2024-06-14 14:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466ac"
+  },
+  "employeeid": 1557,
+  "summary": "Employee joined on 2024-08-01 00:00:00, working as a PermanentContractor. Pay Type: W2 contract - Salary of $24343234.0. Health Insurance: False, 401k: False. Current Position: Sales Executive, Assignment: Internal. Termination Date: NaT.Visa type: CPT (Complete): Entry to US: 2024-08-03T18:30:00.000Z, Start Dates: 2024-08-03 14:30:00, End Dates: 2024-08-29 14:30:00. Visa type: Citizen (Complete): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: Green Card (Complete): Entry to US: None, Start Dates: NaT, End Dates: 2024-08-21 14:30:00. Visa type: H-1B (Pending): Entry to US: None, Start Dates: NaT, End Dates: 2024-08-18 14:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c34666d"
+  },
+  "employeeid": 1485,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $75000.0. Health Insurance: True, 401k: True. Current Position: None, Assignment: Client. Termination Date: 2024-04-16 00:00:00.Visa type: Green Card (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: OPT-Extension (nan): Entry to US: 2019-07-02, Start Dates: 2021-04-02 20:00:00, End Dates: 2025-04-02 20:00:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c34668c"
+  },
+  "employeeid": 1517,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: W2 contract - Salary of $75000.0. Health Insurance: True, 401k: True. Current Position: None, Assignment: Client. Termination Date: NaT.Visa type: H-1B (Complete): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: OPT-Extension (nan): Entry to US: 2019-07-06, Start Dates: 2022-01-31 19:00:00, End Dates: 2026-01-30 19:00:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c34668e"
+  },
+  "employeeid": 1519,
+  "summary": "Employee joined on 2021-06-10 00:00:00, working as a FullTime. Pay Type: C2C contract - Salary of $42423.0. Health Insurance: True, 401k: False. Current Position: Test Des 23 May, Assignment: Internal. Termination Date: NaT.Visa type: Green Card (Complete): Entry to US: None, Start Dates: NaT, End Dates: 2024-06-28 14:30:00. Visa type: H-1B (Complete): Entry to US: None, Start Dates: 2024-04-29 20:00:00, End Dates: 2024-09-29 14:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466a0"
+  },
+  "employeeid": 1545,
+  "summary": "Employee joined on 2019-04-23 00:00:00, working as a None. Pay Type: None - None of $nan. Health Insurance: None, 401k: None. Current Position: None, Assignment: None. Termination Date: NaT.Visa type: Citizen (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: Green Card (Complete): Entry to US: None, Start Dates: NaT, End Dates: 2024-07-30 14:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466b6"
+  },
+  "employeeid": 1570,
+  "summary": "Employee joined on 2021-04-12 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $75000.0. Health Insurance: True, 401k: True. Current Position: None, Assignment: Client. Termination Date: NaT.Visa type: Citizen (Complete): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: Green Card (Complete): Entry to US: None, Start Dates: NaT, End Dates: 2024-10-30 14:30:00. Visa type: H-1B (Complete): Entry to US: None, Start Dates: 2021-03-01 13:30:00, End Dates: 2024-09-10 14:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466ba"
+  },
+  "employeeid": 1574,
+  "summary": "Employee joined on 2023-03-06 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $45000.0. Health Insurance: True, 401k: True. Current Position: Software Developer, Assignment: Client. Termination Date: 2024-11-11 00:00:00.Visa type: H-1B (Complete): Entry to US: 2019-02-10T18:30:00.000Z, Start Dates: 2022-03-30 14:30:00, End Dates: 2026-03-29 14:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466bb"
+  },
+  "employeeid": 1578,
+  "summary": "Employee joined on 2019-04-23 00:00:00, working as a None. Pay Type: None - None of $nan. Health Insurance: None, 401k: None. Current Position: None, Assignment: None. Termination Date: NaT.Visa type: Green Card (nan): Entry to US: None, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346687"
+  },
+  "employeeid": 1511,
+  "summary": "Employee joined on 2020-01-16 00:00:00, working as a None. Pay Type: None - None of $nan. Health Insurance: None, 401k: None. Current Position: None, Assignment: None. Termination Date: NaT.Visa type: H-1B (Complete): Entry to US: None, Start Dates: 2024-05-26 14:30:00, End Dates: 2026-11-12 13:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c34669b"
+  },
+  "employeeid": 1537,
+  "summary": "Employee joined on 2019-04-23 00:00:00, working as a None. Pay Type: None - None of $nan. Health Insurance: None, 401k: None. Current Position: None, Assignment: None. Termination Date: NaT.Visa type: Green Card (nan): Entry to US: None, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346688"
+  },
+  "employeeid": 1513,
+  "summary": "Employee joined on 2020-03-10 00:00:00, working as a None. Pay Type: None - None of $nan. Health Insurance: None, 401k: None. Current Position: None, Assignment: None. Termination Date: NaT.Visa type: Citizen (Pending): Entry to US: None, Start Dates: 2024-05-19 14:30:00, End Dates: NaT. Visa type: Green Card (Pending): Entry to US: None, Start Dates: 2024-05-15 14:30:00, End Dates: NaT. Visa type: H-1B (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c34668b"
+  },
+  "employeeid": 1516,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $45000.0. Health Insurance: True, 401k: True. Current Position: Sales Executive, Assignment: Client. Termination Date: 2024-05-30 00:00:00.Visa type: OPT (nan): Entry to US: 2016-06-12T18:30:00.000Z, Start Dates: 2022-01-03 13:30:00, End Dates: 2024-04-30 14:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466a8"
+  },
+  "employeeid": 1553,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $85000.0. Health Insurance: True, 401k: True. Current Position: Software Developer, Assignment: Client. Termination Date: NaT.Visa type: CPT (nan): Entry to US: 2016-01-31T18:30:00.000Z, Start Dates: 2024-07-31 14:30:00, End Dates: 2024-09-29 14:30:00. Visa type: Citizen (Complete): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: Green Card (Complete): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: H-1B (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466ab"
+  },
+  "employeeid": 1556,
+  "summary": "Employee joined on 2022-04-12 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $95000.0. Health Insurance: True, 401k: True. Current Position: Software Developer, Assignment: Client. Termination Date: NaT.Visa type: CPT (nan): Entry to US: 2019-06-01, Start Dates: 2022-03-31 20:00:00, End Dates: 2026-03-30 20:00:00. Visa type: H-1B (Complete): Entry to US: None, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466bd"
+  },
+  "employeeid": 1586,
+  "summary": "Employee joined on 2023-07-06 00:00:00, working as a PermanentContractor. Pay Type: W2 contract - Salary of $34534535.0. Health Insurance: False, 401k: False. Current Position: Software Developer, Assignment: Internal. Termination Date: NaT.Visa type: CPT (Complete): Entry to US: 2023-10-24T18:30:00.000Z, Start Dates: 2024-11-05 13:30:00, End Dates: 2024-11-29 13:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346671"
+  },
+  "employeeid": 1489,
+  "summary": "Employee joined on 2019-04-08 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $110000.0. Health Insurance: True, 401k: True. Current Position: Technical Project Manager, Assignment: Client. Termination Date: 2024-04-17 00:00:00.Visa type: OPT-Extension (nan): Entry to US: 2016-05-08, Start Dates: 2021-11-15 19:00:00, End Dates: 2025-11-15 19:00:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346696"
+  },
+  "employeeid": 1531,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $55000.0. Health Insurance: True, 401k: True. Current Position: Test Analyst, Assignment: Client. Termination Date: NaT.Visa type: CPT (Pending): Entry to US: None, Start Dates: NaT, End Dates: 2024-06-25 14:30:00. Visa type: H-1B (Pending): Entry to US: None, Start Dates: 2022-01-02 19:00:00, End Dates: 2026-01-01 19:00:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466af"
+  },
+  "employeeid": 1560,
+  "summary": "Employee joined on 2024-08-02 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $44233.0. Health Insurance: False, 401k: False. Current Position: None, Assignment: Internal. Termination Date: 2024-11-13 00:00:00.Visa type: CPT (Complete): Entry to US: 2024-08-12, Start Dates: 2024-08-02 20:00:00, End Dates: 2024-10-17 20:00:00. Visa type: Citizen (Complete): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: Green Card (Complete): Entry to US: None, Start Dates: NaT, End Dates: 2024-08-28 14:30:00. Visa type: H-1B (Complete): Entry to US: None, Start Dates: NaT, End Dates: 2024-08-30 14:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c34666b"
+  },
+  "employeeid": 1482,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $85000.0. Health Insurance: True, 401k: True. Current Position: Software Developer, Assignment: Client. Termination Date: 2024-04-01 00:00:00.Visa type: OPT-Extension (nan): Entry to US: 2019-07-06, Start Dates: 2021-04-02 20:00:00, End Dates: 2025-04-02 20:00:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346689"
+  },
+  "employeeid": 1514,
+  "summary": "Employee joined on 2019-04-23 00:00:00, working as a None. Pay Type: None - None of $nan. Health Insurance: None, 401k: None. Current Position: None, Assignment: None. Termination Date: NaT.Visa type: Citizen (nan): Entry to US: None, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466a1"
+  },
+  "employeeid": 1546,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $145000.0. Health Insurance: True, 401k: True. Current Position: Technical Project Manager, Assignment: Internal. Termination Date: 2024-09-30 00:00:00.Visa type: H-1B (Pending): Entry to US: None, Start Dates: 2021-02-01 13:30:00, End Dates: 2025-01-31 13:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466a3"
+  },
+  "employeeid": 1548,
+  "summary": "Employee joined on 2023-04-05 00:00:00, working as a PartTime. Pay Type: W2 contract - Salary of $42423400000000.0. Health Insurance: True, 401k: False. Current Position: Software Developer, Assignment: Internal. Termination Date: NaT.Visa type: CPT (nan): Entry to US: 2022-10-11T18:30:00.000Z, Start Dates: 2024-06-30 14:30:00, End Dates: 2024-08-29 14:30:00. Visa type: H-1B (Complete): Entry to US: None, Start Dates: NaT, End Dates: 2024-10-30 14:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466a7"
+  },
+  "employeeid": 1552,
+  "summary": "Employee joined on 2021-07-08 00:00:00, working as a FullTime. Pay Type: C2C contract - Salary of $323424000000.0. Health Insurance: True, 401k: False. Current Position: Quality Assurance Tester, Assignment: Internal. Termination Date: NaT.Visa type: Citizen (Complete): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: Green Card (Complete): Entry to US: None, Start Dates: 2024-08-10 14:30:00, End Dates: 2024-09-29 14:30:00. Visa type: H-1B (Pending): Entry to US: None, Start Dates: 2024-06-02 20:00:00, End Dates: 2024-06-28 20:00:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466ae"
+  },
+  "employeeid": 1559,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $95000.0. Health Insurance: True, 401k: True. Current Position: Test Analyst, Assignment: Client. Termination Date: 2024-09-02 00:00:00.Visa type: CPT (Complete): Entry to US: 2018-06-01T18:30:00.000Z, Start Dates: 2022-01-01 13:30:00, End Dates: 2025-12-31 13:30:00. Visa type: H-1B (Complete): Entry to US: None, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466b3"
+  },
+  "employeeid": 1567,
+  "summary": "Employee joined on 2021-04-12 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $65000.0. Health Insurance: True, 401k: True. Current Position: Test Analyst, Assignment: Client. Termination Date: NaT.Visa type: Green Card (Pending): Entry to US: None, Start Dates: 2024-09-01 14:30:00, End Dates: 2034-08-31 14:30:00. Visa type: H-1B (Complete): Entry to US: None, Start Dates: 2021-03-07 13:30:00, End Dates: 2024-09-08 14:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466b5"
+  },
+  "employeeid": 1569,
+  "summary": "Employee joined on 2023-07-06 00:00:00, working as a FullTime. Pay Type: C2C contract - Salary of $342434.0. Health Insurance: False, 401k: False. Current Position: fsd, Assignment: Internal. Termination Date: 2024-10-04 00:00:00.Visa type: Citizen (Complete): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: Green Card (Complete): Entry to US: None, Start Dates: 2024-09-16 14:30:00, End Dates: 2034-09-20 14:30:00. Visa type: H-1B (Complete): Entry to US: 2023-06-21T18:30:00.000Z, Start Dates: 2024-08-31 14:30:00, End Dates: 2024-09-15 14:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346678"
+  },
+  "employeeid": 1496,
+  "summary": "Employee joined on 2021-03-22 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $95000.0. Health Insurance: True, 401k: True. Current Position: Technical Project Manager, Assignment: Client. Termination Date: NaT.Visa type: Green Card (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: H-1B (nan): Entry to US: 2019-07-06, Start Dates: 2021-04-02 20:00:00, End Dates: 2025-04-02 20:00:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c34667c"
+  },
+  "employeeid": 1500,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $135000.0. Health Insurance: True, 401k: True. Current Position: Technical Project Manager, Assignment: Client. Termination Date: 2024-06-28 00:00:00.Visa type: Citizen (nan): Entry to US: 2010-06-06, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346684"
+  },
+  "employeeid": 1508,
+  "summary": "Employee joined on 2023-07-05 00:00:00, working as a PartTime. Pay Type: W2 contract - Salary of $324234000000.0. Health Insurance: False, 401k: False. Current Position: new des, Assignment: Internal. Termination Date: NaT.Visa type: H-1B (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466aa"
+  },
+  "employeeid": 1555,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $95000.0. Health Insurance: True, 401k: True. Current Position: Software Developer, Assignment: Client. Termination Date: NaT.Visa type: Green Card (Complete): Entry to US: None, Start Dates: NaT, End Dates: 2030-02-03 13:30:00. Visa type: H-1B (nan): Entry to US: 2018-08-01T18:30:00.000Z, Start Dates: 2021-01-04 13:30:00, End Dates: 2025-01-03 13:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466b2"
+  },
+  "employeeid": 1566,
+  "summary": "Employee joined on 2021-04-12 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $85000.0. Health Insurance: True, 401k: True. Current Position: Tech Support Executive, Assignment: Client. Termination Date: NaT.Visa type: Green Card (Pending): Entry to US: None, Start Dates: 2024-09-02 14:30:00, End Dates: 2034-08-31 14:30:00. Visa type: H-1B (Complete): Entry to US: None, Start Dates: 2021-01-10 13:30:00, End Dates: 2024-08-31 14:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c34666e"
+  },
+  "employeeid": 1486,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $75000.0. Health Insurance: True, 401k: True. Current Position: Software Developer, Assignment: Client. Termination Date: 2024-04-16 00:00:00.Visa type: CPT (Complete): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: Green Card (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: H-1B (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: OPT-Extension Audit (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346676"
+  },
+  "employeeid": 1494,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $35000.0. Health Insurance: True, 401k: True. Current Position: Quality Assurance Tester, Assignment: Client. Termination Date: 2024-06-28 00:00:00.Visa type: OPT (nan): Entry to US: 2019-07-14T18:30:00.000Z, Start Dates: 2021-04-02 14:30:00, End Dates: 2025-04-01 14:30:00. Visa type: OPT-Extension (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346685"
+  },
+  "employeeid": 1509,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $185000.0. Health Insurance: True, 401k: True. Current Position: Technical Project Manager, Assignment: Client. Termination Date: NaT.Visa type: H-1B (nan): Entry to US: 2018-04-30, Start Dates: 2022-01-15 19:00:00, End Dates: 2026-01-14 19:00:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346692"
+  },
+  "employeeid": 1526,
+  "summary": "Employee joined on 2021-02-02 00:00:00, working as a FullTime. Pay Type: W2 contract - Salary of $75000.0. Health Insurance: True, 401k: True. Current Position: None, Assignment: Client. Termination Date: NaT.Visa type: Green Card (nan): Entry to US: 2019-07-06, Start Dates: 2021-02-04 19:00:00, End Dates: 2031-01-30 19:00:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346698"
+  },
+  "employeeid": 1533,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $75000.0. Health Insurance: True, 401k: True. Current Position: Software Developer, Assignment: Client. Termination Date: NaT.Visa type: H-1B (nan): Entry to US: 2019-02-10T18:30:00.000Z, Start Dates: 2022-03-01 13:30:00, End Dates: 2025-02-28 13:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466b8"
+  },
+  "employeeid": 1572,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $65000.0. Health Insurance: True, 401k: True. Current Position: None, Assignment: Client. Termination Date: 2024-11-13 00:00:00.Visa type: Citizen (Complete): Entry to US: None, Start Dates: 2024-10-21 14:30:00, End Dates: NaT. Visa type: Green Card (Complete): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: H-1B (Complete): Entry to US: 2016-09-03T18:30:00.000Z, Start Dates: 2019-06-30 14:30:00, End Dates: 2025-05-29 14:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466b9"
+  },
+  "employeeid": 1573,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $85000.0. Health Insurance: True, 401k: True. Current Position: None, Assignment: Client. Termination Date: NaT.Visa type: Green Card (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: H-1B (Complete): Entry to US: 2017-06-10, Start Dates: 2021-03-29 20:00:00, End Dates: 2025-03-28 20:00:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346673"
+  },
+  "employeeid": 1491,
+  "summary": "Employee joined on 2022-02-07 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $120000.0. Health Insurance: True, 401k: True. Current Position: Technical Project Manager, Assignment: Client. Termination Date: 2024-04-26 00:00:00.Visa type: CPT (nan): Entry to US: 2016-06-07, Start Dates: 2021-11-15 19:00:00, End Dates: 2025-11-15 19:00:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346675"
+  },
+  "employeeid": 1493,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $65000.0. Health Insurance: True, 401k: True. Current Position: Technical Project Manager, Assignment: Trainee. Termination Date: 2024-04-26 00:00:00.Visa type: OPT (nan): Entry to US: 2019-01-06T18:30:00.000Z, Start Dates: 2021-02-01 13:30:00, End Dates: 2025-01-31 13:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346677"
+  },
+  "employeeid": 1495,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $55000.0. Health Insurance: True, 401k: True. Current Position: None, Assignment: Client. Termination Date: 2024-06-06 00:00:00.Visa type: OPT (nan): Entry to US: 2019-07-06, Start Dates: 2021-06-05 20:00:00, End Dates: 2025-06-04 20:00:00. Visa type: OPT-Extension (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346681"
+  },
+  "employeeid": 1505,
+  "summary": "Employee joined on 2022-04-12 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $175000.0. Health Insurance: True, 401k: True. Current Position: Technical Project Manager, Assignment: Client. Termination Date: 2024-06-28 00:00:00.Visa type: Citizen (nan): Entry to US: 2012-05-05, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466a9"
+  },
+  "employeeid": 1554,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $95000.0. Health Insurance: True, 401k: True. Current Position: Software Developer, Assignment: Client. Termination Date: NaT.Visa type: H-1B (nan): Entry to US: 2016-11-08, Start Dates: 2021-01-02 19:00:00, End Dates: 2025-01-01 19:00:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466b0"
+  },
+  "employeeid": 1561,
+  "summary": "Employee joined on 2024-11-01 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $95000.0. Health Insurance: True, 401k: True. Current Position: Test Analyst, Assignment: Client. Termination Date: NaT.Visa type: CPT (Complete): Entry to US: None, Start Dates: 2022-01-01 13:30:00, End Dates: 2024-09-09 14:30:00. Visa type: OPT (Pending): Entry to US: None, Start Dates: 2024-09-09 14:30:00, End Dates: 2030-09-25 14:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346691"
+  },
+  "employeeid": 1525,
+  "summary": "Employee joined on NaT, working as a None. Pay Type: None - None of $nan. Health Insurance: None, 401k: None. Current Position: None, Assignment: None. Termination Date: NaT.Visa type: CPT (Pending): Entry to US: None, Start Dates: 2024-01-02 13:30:00, End Dates: 2024-10-30 14:30:00. Visa type: H-1B (Pending): Entry to US: None, Start Dates: 2021-01-03 13:30:00, End Dates: 2025-01-02 13:30:00. Visa type: OPT (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346695"
+  },
+  "employeeid": 1530,
+  "summary": "Employee joined on 2019-04-23 00:00:00, working as a None. Pay Type: None - None of $nan. Health Insurance: None, 401k: None. Current Position: None, Assignment: None. Termination Date: NaT.Visa type: Citizen (Complete): Entry to US: None, Start Dates: NaT, End Dates: 2024-06-29 14:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c34669a"
+  },
+  "employeeid": 1536,
+  "summary": "Employee joined on 2020-03-10 00:00:00, working as a FullTime. Pay Type: None - None of $nan. Health Insurance: None, 401k: None. Current Position: None, Assignment: Internal. Termination Date: NaT.Visa type: CPT (nan): Entry to US: None, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c34669d"
+  },
+  "employeeid": 1541,
+  "summary": "Employee joined on 2022-06-15 00:00:00, working as a PartTime. Pay Type: C2C contract - Salary of $345345345.0. Health Insurance: True, 401k: False. Current Position: None, Assignment: Internal. Termination Date: NaT.Visa type: CPT (Pending): Entry to US: None, Start Dates: NaT, End Dates: 2024-07-16 14:30:00. Visa type: Green Card (Complete): Entry to US: None, Start Dates: NaT, End Dates: 2024-07-23 14:30:00. Visa type: H-1B (nan): Entry to US: 2022-06-05, Start Dates: 2024-06-29 20:00:00, End Dates: 2024-07-29 20:00:00. Visa type: H-1B Audit (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466a5"
+  },
+  "employeeid": 1550,
+  "summary": "Employee joined on 2022-06-07 00:00:00, working as a FullTime. Pay Type: W2 contract - Salary of $555456464.0. Health Insurance: True, 401k: False. Current Position: Sales Executive, Assignment: Internal. Termination Date: 2024-08-20 00:00:00.Visa type: CPT (Complete): Entry to US: None, Start Dates: 2024-07-31 14:30:00, End Dates: 2024-08-12 14:30:00. Visa type: Citizen (Complete): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: Green Card (Complete): Entry to US: None, Start Dates: NaT, End Dates: 2024-08-11 14:30:00. Visa type: H-1B (Complete): Entry to US: None, Start Dates: NaT, End Dates: 2024-08-10 14:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466b7"
+  },
+  "employeeid": 1571,
+  "summary": "Employee joined on 2023-12-14 00:00:00, working as a PartTime. Pay Type: W2 contract - Salary of $342423.0. Health Insurance: False, 401k: False. Current Position: Software Consultant, Assignment: Internal. Termination Date: 2024-11-01 00:00:00.Visa type: Citizen (Complete): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: Green Card (Pending): Entry to US: None, Start Dates: NaT, End Dates: 2024-09-29 14:30:00. Visa type: H-1B (Complete): Entry to US: None, Start Dates: 2023-11-16 13:30:00, End Dates: 2024-09-15 14:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346674"
+  },
+  "employeeid": 1492,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $65000.0. Health Insurance: True, 401k: True. Current Position: Test Analyst, Assignment: Client. Termination Date: 2024-06-06 00:00:00.Visa type: OPT-Extension (nan): Entry to US: 2019-06-02T18:30:00.000Z, Start Dates: 2021-03-01 13:30:00, End Dates: 2025-02-28 13:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c34667b"
+  },
+  "employeeid": 1499,
+  "summary": "Employee joined on 2019-03-04 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $175000.0. Health Insurance: True, 401k: True. Current Position: Technical Project Manager, Assignment: Client. Termination Date: 2024-05-06 00:00:00.Visa type: Citizen (nan): Entry to US: 2017-05-07, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c34667d"
+  },
+  "employeeid": 1501,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: W2 contract - Hourly of $50.0. Health Insurance: False, 401k: False. Current Position: None, Assignment: Internal. Termination Date: NaT.Visa type: H-1B (nan): Entry to US: 2019-07-21T18:30:00.000Z, Start Dates: 2021-01-03 13:30:00, End Dates: 2025-01-02 13:30:00. Visa type: H-1B Audit (Complete): Entry to US: None, Start Dates: NaT, End Dates: 2024-12-26 13:30:00. Visa type: H-1B Extension (Pending): Entry to US: None, Start Dates: 2025-01-12 13:30:00, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346697"
+  },
+  "employeeid": 1532,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $65000.0. Health Insurance: True, 401k: True. Current Position: Software Developer, Assignment: Client. Termination Date: NaT.Visa type: CPT (Pending): Entry to US: None, Start Dates: NaT, End Dates: 2024-06-27 14:30:00. Visa type: Green Card (Complete): Entry to US: None, Start Dates: NaT, End Dates: 2024-06-27 14:30:00. Visa type: H-1B (Complete): Entry to US: None, Start Dates: 2021-01-30 13:30:00, End Dates: 2028-01-29 13:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466ad"
+  },
+  "employeeid": 1558,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $95000.0. Health Insurance: True, 401k: True. Current Position: Software Developer, Assignment: Client. Termination Date: NaT.Visa type: Citizen (Complete): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: Green Card (Complete): Entry to US: None, Start Dates: 2024-08-08 14:30:00, End Dates: 2027-12-31 13:30:00. Visa type: H-1B (Pending): Entry to US: None, Start Dates: 2022-01-01 13:30:00, End Dates: 2025-12-31 13:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c34666f"
+  },
+  "employeeid": 1487,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $65000.0. Health Insurance: True, 401k: True. Current Position: None, Assignment: Client. Termination Date: NaT.Visa type: CPT (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: H-1B (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346683"
+  },
+  "employeeid": 1507,
+  "summary": "Employee joined on 2024-09-02 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $175000.0. Health Insurance: True, 401k: True. Current Position: None, Assignment: Client. Termination Date: 2024-06-20 00:00:00.Visa type: Citizen (nan): Entry to US: 2012-05-05, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c34667e"
+  },
+  "employeeid": 1502,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $55000.0. Health Insurance: True, 401k: True. Current Position: None, Assignment: Client. Termination Date: NaT.Visa type: Green Card (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: H-1B (nan): Entry to US: 2019-07-06, Start Dates: 2021-04-02 20:00:00, End Dates: 2025-04-02 20:00:00. Visa type: H-1B Amendment (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: H-1B Audit (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: H-1B Extension (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c34669c"
+  },
+  "employeeid": 1540,
+  "summary": "Employee joined on 2019-04-23 00:00:00, working as a None. Pay Type: None - None of $nan. Health Insurance: None, 401k: None. Current Position: None, Assignment: None. Termination Date: NaT.Visa type: Green Card (nan): Entry to US: None, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c34669e"
+  },
+  "employeeid": 1542,
+  "summary": "Employee joined on 2020-01-16 00:00:00, working as a None. Pay Type: None - None of $nan. Health Insurance: None, 401k: None. Current Position: None, Assignment: None. Termination Date: NaT.Visa type: CPT (Pending): Entry to US: None, Start Dates: NaT, End Dates: 2024-07-25 14:30:00. Visa type: H-1B (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466a4"
+  },
+  "employeeid": 1549,
+  "summary": "Employee joined on 2021-04-12 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $85000.0. Health Insurance: True, 401k: True. Current Position: Software Developer, Assignment: Client. Termination Date: NaT.Visa type: Green Card (Complete): Entry to US: None, Start Dates: 2024-07-31 14:30:00, End Dates: 2025-01-30 13:30:00. Visa type: H-1B (Pending): Entry to US: None, Start Dates: 2021-01-30 13:30:00, End Dates: 2024-07-31 14:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466b1"
+  },
+  "employeeid": 1565,
+  "summary": "Employee joined on 2019-04-23 00:00:00, working as a None. Pay Type: None - None of $nan. Health Insurance: None, 401k: None. Current Position: None, Assignment: None. Termination Date: NaT.Visa type: Citizen (Complete): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: Green Card (nan): Entry to US: None, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466b4"
+  },
+  "employeeid": 1568,
+  "summary": "Employee joined on 2021-04-12 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $95000.0. Health Insurance: True, 401k: True. Current Position: Software Developer, Assignment: Client. Termination Date: NaT.Visa type: Green Card (Complete): Entry to US: None, Start Dates: NaT, End Dates: 2024-09-09 14:30:00. Visa type: H-1B (Pending): Entry to US: None, Start Dates: 2024-09-01 14:30:00, End Dates: 2034-08-31 14:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c34666c"
+  },
+  "employeeid": 1483,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $75000.0. Health Insurance: True, 401k: True. Current Position: None, Assignment: Client. Termination Date: 2024-04-16 00:00:00.Visa type: CPT (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: Green Card (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: H-1B (nan): Entry to US: 2019-06-16T18:30:00.000Z, Start Dates: 2021-01-31 13:30:00, End Dates: 2025-01-31 13:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346670"
+  },
+  "employeeid": 1488,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $35000.0. Health Insurance: True, 401k: True. Current Position: None, Assignment: Client. Termination Date: 2024-08-30 00:00:00.Visa type: Green Card (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: H-1B (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: TN Visa (nan): Entry to US: 2019-07-06, Start Dates: 2021-11-15 19:00:00, End Dates: 2025-11-15 19:00:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346679"
+  },
+  "employeeid": 1497,
+  "summary": "Employee joined on 2022-04-12 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $55000.0. Health Insurance: True, 401k: True. Current Position: Software Developer, Assignment: Client. Termination Date: NaT.Visa type: Green Card (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: OPT (Pending): Entry to US: None, Start Dates: 2021-04-02 20:00:00, End Dates: 2025-04-02 20:00:00. Visa type: OPT-Extension (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c34667a"
+  },
+  "employeeid": 1498,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $65000.0. Health Insurance: True, 401k: True. Current Position: None, Assignment: Client. Termination Date: 2024-07-31 00:00:00.Visa type: H-1B (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: OPT (nan): Entry to US: 2019-07-06, Start Dates: 2021-04-02 20:00:00, End Dates: 2025-04-02 20:00:00. Visa type: OPT-Extension (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346682"
+  },
+  "employeeid": 1506,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: 1099 contract - Hourly of $50.0. Health Insurance: True, 401k: True. Current Position: None, Assignment: Client. Termination Date: 2024-07-24 00:00:00.Visa type: Green Card (Pending): Entry to US: None, Start Dates: 2024-06-04 14:30:00, End Dates: 2025-06-26 14:30:00. Visa type: H-1B (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: OPT (nan): Entry to US: 2022-01-31, Start Dates: 2022-03-29 20:00:00, End Dates: 2026-10-28 20:00:00. Visa type: OPT-Extension (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c34669f"
+  },
+  "employeeid": 1543,
+  "summary": "Employee joined on 2017-03-01 00:00:00, working as a None. Pay Type: None - None of $nan. Health Insurance: None, 401k: None. Current Position: None, Assignment: None. Termination Date: NaT.Visa type: Green Card (Pending): Entry to US: None, Start Dates: 2024-07-02 14:30:00, End Dates: 2024-07-30 14:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466a6"
+  },
+  "employeeid": 1551,
+  "summary": "Employee joined on 2024-08-01 00:00:00, working as a FullTime. Pay Type: W2 contract - Salary of $34223424.0. Health Insurance: True, 401k: False. Current Position: Software Developer, Assignment: Internal. Termination Date: NaT.Visa type: CPT (nan): Entry to US: 2024-08-03T18:30:00.000Z, Start Dates: 2024-08-04 14:30:00, End Dates: 2024-08-30 14:30:00. Visa type: Citizen (Complete): Entry to US: None, Start Dates: NaT, End Dates: NaT. Visa type: Green Card (Complete): Entry to US: None, Start Dates: NaT, End Dates: 2024-08-21 14:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346686"
+  },
+  "employeeid": 1510,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $65000.0. Health Insurance: True, 401k: True. Current Position: None, Assignment: Client. Termination Date: 2024-07-31 00:00:00.Visa type: H-1B (nan): Entry to US: 2019-07-06, Start Dates: 2022-03-30 20:00:00, End Dates: 2026-03-29 20:00:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c34668f"
+  },
+  "employeeid": 1520,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $75000.0. Health Insurance: True, 401k: True. Current Position: None, Assignment: Client. Termination Date: NaT.Visa type: H-1B (nan): Entry to US: 2019-02-01T18:30:00.000Z, Start Dates: 2022-03-01 13:30:00, End Dates: 2025-02-28 13:30:00. Visa type: H-1B Extension (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346690"
+  },
+  "employeeid": 1521,
+  "summary": "Employee joined on 2022-04-09 00:00:00, working as a FullTime. Pay Type: 1099 contract - Salary of $56000.0. Health Insurance: True, 401k: True. Current Position: Software Developer, Assignment: Internal. Termination Date: 2024-07-31 00:00:00.Visa type: H-1B (Pending): Entry to US: None, Start Dates: 2024-05-26 14:30:00, End Dates: 2024-07-30 14:30:00. Visa type: OPT (Pending): Entry to US: None, Start Dates: 2023-02-02 13:30:00, End Dates: 2024-02-27 13:30:00. Visa type: OPT-Extension (Pending): Entry to US: None, Start Dates: 2024-05-01 14:30:00, End Dates: 2024-05-06 14:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346699"
+  },
+  "employeeid": 1534,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $55000.0. Health Insurance: True, 401k: True. Current Position: Software Developer, Assignment: Client. Termination Date: NaT.Visa type: CPT (Pending): Entry to US: None, Start Dates: NaT, End Dates: 2024-06-27 14:30:00. Visa type: Green Card (Complete): Entry to US: None, Start Dates: 2024-06-26 14:30:00, End Dates: 2024-08-29 14:30:00. Visa type: H-1B (nan): Entry to US: 2016-04-10T18:30:00.000Z, Start Dates: 2022-01-02 13:30:00, End Dates: 2026-03-01 13:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c346672"
+  },
+  "employeeid": 1490,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $105000.0. Health Insurance: True, 401k: True. Current Position: Technical Project Manager, Assignment: Client. Termination Date: 2024-07-31 00:00:00.Visa type: H-1B (nan): Entry to US: 2017-04-30, Start Dates: 2021-04-02 20:00:00, End Dates: 2025-04-02 20:00:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c34668a"
+  },
+  "employeeid": 1515,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Hourly of $20.0. Health Insurance: False, 401k: False. Current Position: None, Assignment: Client. Termination Date: NaT.Visa type: Green Card (Complete): Entry to US: None, Start Dates: 2024-05-01 14:30:00, End Dates: NaT. Visa type: OPT-Extension (Pending): Entry to US: None, Start Dates: 2022-03-04 13:30:00, End Dates: 2024-04-30 14:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c34668d"
+  },
+  "employeeid": 1518,
+  "summary": "Employee joined on 2022-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $55000.0. Health Insurance: True, 401k: True. Current Position: Test Analyst, Assignment: Client. Termination Date: NaT.Visa type: Green Card (Pending): Entry to US: None, Start Dates: 2024-05-12 14:30:00, End Dates: 2025-05-29 14:30:00. Visa type: H-1B (Complete): Entry to US: None, Start Dates: 2022-01-31 19:00:00, End Dates: 2024-04-30 14:30:00. Visa type: H-1B Extension (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466a2"
+  },
+  "employeeid": 1547,
+  "summary": "Employee joined on 2021-04-11 00:00:00, working as a FullTime. Pay Type: Compensation Package - Salary of $75000.0. Health Insurance: True, 401k: True. Current Position: Software Developer, Assignment: Client. Termination Date: NaT.Visa type: H-1B (nan): Entry to US: 2019-02-01T18:30:00.000Z, Start Dates: 2021-02-01 13:30:00, End Dates: 2025-01-31 13:30:00."
+},
+{
+  "_id": {
+    "$oid": "680282ad320e3bb14c3466bc"
+  },
+  "employeeid": 1579,
+  "summary": "Employee joined on NaT, working as a FullTime. Pay Type: None - None of $nan. Health Insurance: None, 401k: None. Current Position: None, Assignment: Client. Termination Date: NaT.Visa type: H-1B (Pending): Entry to US: None, Start Dates: NaT, End Dates: NaT."
+}]

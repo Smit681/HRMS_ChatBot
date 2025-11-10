@@ -1,0 +1,37 @@
+# Core dependencies
+python-dotenv
+
+# LLM and Embeddings
+sentence-transformers
+llama-index
+llama-index-embeddings-huggingface
+llama-index-core
+
+# Vector Database
+chromadb
+
+# Data Processing
+pandas
+numpy
+
+# Progress bars
+tqdm
+
+# Deep Learning (for GPU acceleration)
+torch
+torchvision
+
+# API and Web Framework (for future phases)
+fastapi
+uvicorn
+pydantic
+
+# Frontend (for future phases)
+streamlit
+
+# Testing
+pytest
+pytest-asyncio
+
+# Utilities
+python-dateutil

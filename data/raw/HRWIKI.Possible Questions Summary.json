@@ -1,0 +1,132 @@
+[{
+  "_id": {
+    "$oid": "68028303320e3bb14c3466c6"
+  },
+  "fields": "the summary of contract types under payDetails.payType (payDetails.payType)",
+  "summary": "There're 4 types of payDetails.payType in the company: Compensation Package, W2 contract, C2C contract, and 1099 contract. In company, 52 employees are under Compensation Package (payDetails.payType), 10 employees are under W2 contract (payDetails.payType), 4 employees are under C2C contract (payDetails.payType), and 2 employees are under 1099 contract (payDetails.payType)",
+  "question_variants": [
+    "How many employees are under W2 or C2C contracts?",
+    "Show employee count by payDetails.payType",
+    "What are the contract types and their employee counts?"
+  ]
+},
+{
+  "_id": {
+    "$oid": "68028303320e3bb14c3466c5"
+  },
+  "fields": "the summary of employmentType of employee in company (employmentType)",
+  "summary": "There're 3 kinds of employmentType in company: FullTime, PartTime, and PermanentContractor. In company, there're 64 employee are under FullTime (employmentType), 4 employee are under PartTime(employmentType), 2 employee are under PermanentContractor(employmentType)",
+  "question_variants": [
+    "How many employees are FullTime or PartTime?",
+    "What is the breakdown of employmentType in the company?",
+    "Give a summary of how many employees are under each employmentType"
+  ]
+},
+{
+  "_id": {
+    "$oid": "68028303320e3bb14c3466c3"
+  },
+  "fields": "number of employees require h1b visa sponsorship(visaName,startDateDt.$date & endDateDt.$date)",
+  "summary": "employee with those kinds of visaName types are need h1b visa sponsorship:[H-1B; H-1B Amandment; H-1B Audit; H-1B Extension]; and by verifying the start date(startDateDt.$date) or end date(endDateDt.$date) of visa is belongs to this year(2025), there would be 15 possible employee need H1B sponsorship",
+  "question_variants": [
+    "How many employees are currently on H-1B or related visa types?",
+    "How many H1B applicants are there this year?",
+    "How many employees need H-1B renewal or sponsorship?",
+    "List employees whose H-1B status starts or ends in 2025",
+    "How many workers require H-1B processing in this year?"
+  ]
+},
+{
+  "_id": {
+    "$oid": "68028303320e3bb14c3466cb"
+  },
+  "field": "number of employee visas that will expire within a certain number of months (endDateDt.$date)",
+  "summary": "This field indicates how many employee visas are set to expire (endDateDt.$date) within a given time window (1–12 months) from today. According to given data, 38 visas will expire within 1 month, 55 within 6 months, and 100 within 12 months. The expiration count dynamically changes based on the chosen time window.",
+  "question_variants": [
+    "How many visas will expire in the next 1 months?",
+    "Number of visa expirations within 6 months?",
+    "Employees with visas ending within 12 months?"
+  ]
+},
+{
+  "_id": {
+    "$oid": "68028303320e3bb14c3466c9"
+  },
+  "fields": "the summary of visaStatus(Pending or Complete) for employees' visa status (visaStatus)",
+  "summary": "There are two main visa statuses for employees: Pending and Complete. In the company, there are 64 employees with Pending visa status (visaStatus) and 60 employees with Complete visa status (visaStatus).",
+  "question_variants": [
+    "How many employees have a Pending visa status?",
+    "Visa status distribution of all employees",
+    "Summarize how many visas are complete vs pending"
+  ]
+},
+{
+  "_id": {
+    "$oid": "68028303320e3bb14c3466c2"
+  },
+  "fields": "the policy of sick days/vacation days in company (payDetails.federalHolidayAndSickDay & payDetails.paidVacationDay)",
+  "summary": "If both are true, employees are entitled to 5 sick leave days and 8 paid vacation days per year. Usage of these leave types should be subtracted from their respective quotas to calculate the remaining days.Some questions may refer to PTO (paid time off), which includes both types unless specified otherwise",
+  "questions_variant": [
+    "How many vacation and sick days do I have left this year?",
+    "If I took 2 vacation days and 1 sick day, what's my balance?",
+    "What is the company policy on sick and vacation leave?",
+    "How many paid days off are provided?",
+    "How many sick days am I allowed annually?",
+    "Do I get both vacation and sick leave in this company?",
+    "What's the rule for using vacation or sick days?",
+    "Are sick days and vacation days tracked separately?",
+    "What's my remaining PTO (paid time off)?"
+  ]
+},
+{
+  "_id": {
+    "$oid": "68028303320e3bb14c3466c4"
+  },
+  "fields": "number of employees terminated in the past <months> (terminationDate)",
+  "summary": "To determine how many employees were terminated, count the number of employees whose terminationDate is not null and falls within the past <months> months from today. According to given data, 4 employees were terminated in the past 6 months, and 25 employees in the past 12 months.",
+  "question_variants": [
+    "How many employees have been terminated in the last <months> months?",
+    "Show terminations in the past <months> months.",
+    "Employee terminations within <months> months?",
+    "How many terminations occurred recently (past <months> months)?",
+    "Number of employees who left the company in <months> months?",
+    "Count of terminations in last <months> months?",
+    "Employees removed from company in past <months>?"
+  ]
+},
+{
+  "_id": {
+    "$oid": "68028303320e3bb14c3466c7"
+  },
+  "fields": "the summary of assignment types under assigmentType (assigmentType)",
+  "summary": "There are 3 types of assigmentType in the company: Client, Internal, and Trainee. In total, 51 employees are assigned to Client (assigmentType), 18 employees are assigned to Internal (assigmentType), and 1 employee is assigned to Trainee (assigmentType)",
+  "question_variants": [
+    "How many employees are Client assignments?",
+    "Number of Internal vs. Client assignment employees?",
+    "Summarize assignmentType distribution among employees"
+  ]
+},
+{
+  "_id": {
+    "$oid": "68028303320e3bb14c3466c8"
+  },
+  "fields": "the summary of current visa types under visaName (visaName) for employees",
+  "summary": "There are various visa types for employees in the company, including H-1B, Green Card, CPT, Citizen, OPT, OPT-Extension, H-1B Extension, and TN Visa. In total, 26 employees have H-1B visa (visaName), 19 employees have Green Card (visaName), 13 employees have CPT visa (visaName), 9 employees have Citizen status (visaName), 8 employees have OPT visa (visaName), 5 employees have OPT-Extension visa (visaName), 1 employee has H-1B Extension visa (visaName), and 1 employee has TN Visa (visaName). The count considers only the most recent visa type for each employee based on the closest start date.",
+  "question_variants": [
+    "How many employees are currently under H-1B visa?",
+    "Give me a visaName summary for all employees",
+    "Current visa types and employee counts?"
+  ]
+},
+{
+  "_id": {
+    "$oid": "68028303320e3bb14c3466ca"
+  },
+  "fields": "the summary of processingStatus for employee visas (processingStatus)",
+  "summary": "There are various processing statuses for employee visas. The distribution of employees based on processing status is as follows: Complete: 114; Denied: 15; CAP LCA Pending: 4; GC EAD Card Pending: 3; Filing Receipt Pending: 3; I-20 Pending: 3; CAP Questionnaire Review Pending: 2; Perm Questionnaire Review Pending: 2; Audit Request Notice: 2; Extension Approved I-797 Pending: 2; STEM EAD Receipt Received: 2; CAP Approved I-797 Pending: 2; I-140 Approval Pending: 1; Amendment Audit Response Filed/Decision Pending: 1; OPT Extension Audit Employer Pending: 1; CAP Application Filed/Decision Pending: 1; Extension Support Letter Pending: 1; Extension RFE Response Filed/Decision Pending: 1; EAD Card Pending: 1; Perm LCA Pending: 1.",
+  "question_variants": [
+    "Show me employee count by processingStatus",
+    "How many employees are in denied or pending visa processing?",
+    "Visa processing status breakdown?"
+  ]
+}]

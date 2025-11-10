@@ -1,0 +1,62 @@
+======================================================================
+DATA QUALITY ASSESSMENT REPORT
+======================================================================
+
+SUMMARY STATISTICS:
+----------------------------------------------------------------------
+
+EMPLOYEES:
+  • Missing Joining Date: 72
+  • Missing Salary: 54
+  • Inconsistent Entry Dates: 62
+  • Terminated Employees: 29
+  • Total Employees: 83
+
+MEDICAL_1000_PLAN:
+  • Total Records: 1
+
+DENTAL_PLAN:
+  • Total Records: 1
+
+VISION_PLAN:
+  • Total Records: 1
+
+EMPLOYMENT_AGREEMENT:
+  • Total Records: 1
+
+======================================================================
+ISSUES FOUND:
+----------------------------------------------------------------------
+
+HIGH SEVERITY ISSUES: 72
+  • Missing joining date - ID: 1503
+  • Missing joining date - ID: 1504
+  • Missing joining date - ID: 1527
+  • Missing joining date - ID: 1528
+  • Missing joining date - ID: 1557
+  • Missing joining date - ID: 1485
+  • Missing joining date - ID: 1517
+  • Missing joining date - ID: 1519
+  • Missing joining date - ID: 1545
+  • Missing joining date - ID: 1570
+
+MEDIUM SEVERITY ISSUES: 54
+  • Missing salary - ID: 1503
+  • Missing salary - ID: 1504
+  • Missing salary - ID: 1527
+  • Missing salary - ID: 1528
+  • Missing salary - ID: 1485
+  • Missing salary - ID: 1517
+  • Missing salary - ID: 1545
+  • Missing salary - ID: 1578
+  • Missing salary - ID: 1511
+  • Missing salary - ID: 1537
+
+======================================================================
+RECOMMENDATIONS:
+----------------------------------------------------------------------
+1. Missing joining dates: Exclude from tenure calculations
+2. Missing salaries: Mark as 'Compensation not disclosed'
+3. Missing visa data: Contact HR to update records
+4. Inconsistent dates: Manual review required
+======================================================================
