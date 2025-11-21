@@ -57,7 +57,7 @@ class HRChatbot:
     def __init__(
         self,
         chroma_path: str = "./chroma_db",
-        ollama_model: str = "deepseek-r1:7b",
+        ollama_model: str = "qwen2.5:14b",
         auto_route: bool = True
     ):
         """

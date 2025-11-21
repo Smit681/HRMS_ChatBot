@@ -37,7 +37,7 @@ class OllamaLLM:
     
     def __init__(
         self,
-        model: str = "deepseek-r1:7b",
+        model: str = "qwen2.5:14b",
         base_url: str = "http://localhost:11434",
         temperature: float = 0.2,
         max_tokens: int = 1000
@@ -46,7 +46,7 @@ class OllamaLLM:
         Initialize Ollama LLM interface
         
         Args:
-            model: Model name (e.g., "deepseek-r1:7b", "llama2:7b")
+            model: Model name (e.g., "qwen2.5:14b", "llama2:7b")
             base_url: Ollama API endpoint
             temperature: Sampling temperature (0=factual, 1=creative)
             max_tokens: Maximum tokens in response
@@ -273,7 +273,7 @@ def main():
     print("="*70)
     
     # Initialize
-    llm = OllamaLLM(model="deepseek-r1:7b")
+    llm = OllamaLLM(model="qwen2.5:14b")
     
     # Test 1: Simple generation
     print("\n--- Test 1: Simple Generation ---")

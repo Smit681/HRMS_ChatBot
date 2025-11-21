@@ -54,7 +54,7 @@ class MultiAgentOrchestrator:
     def __init__(
         self,
         chroma_path: str = "./chroma_db",
-        ollama_model: str = "deepseek-r1:7b"
+        ollama_model: str = "qwen2.5:14b"
     ):
         """
         Initialize multi-agent orchestrator
