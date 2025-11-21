@@ -23,6 +23,8 @@ import logging
 import re
 from datetime import datetime
 
+import torch
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -47,8 +49,8 @@ class RetrievalEngine:
     
     def __init__(
         self,
-        chroma_path: str = "./chroma_db",
-        embedding_model: str = "all-MiniLM-L6-v2",
+        chroma_path: str = "data/embeddings",
+        embedding_model: str = "BAAI/bge-large-en-v1.5",
         semantic_weight: float = 0.7,
         keyword_weight: float = 0.3
     ):
@@ -71,7 +73,12 @@ class RetrievalEngine:
         
         # Load embedding model
         logger.info(f"Loading embedding model: {embedding_model}")
-        self.embedding_model = SentenceTransformer(embedding_model)
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.embedding_model = SentenceTransformer(
+            embedding_model,
+            device=device
+        )
+        logger.info(f"Embedding model loaded on: {device}")
         
         # Set hybrid search weights
         self.semantic_weight = semantic_weight
@@ -80,12 +87,12 @@ class RetrievalEngine:
         # Load collections
         self.collections = {}
         collection_names = [
-            "employee_visa",
+            "employees",            
             "medical_plans",
             "dental_plans",
             "vision_plans",
-            "employment_agreement",
-            "general_questions"
+            "employment_agreements", 
+            "faq" 
         ]
         
         for name in collection_names:

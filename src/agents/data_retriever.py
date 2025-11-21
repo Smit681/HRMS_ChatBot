@@ -42,7 +42,7 @@ class DataRetriever:
     - Multi-source: Cross-collection queries
     """
     
-    def __init__(self, chroma_path: str = "./chroma_db"):
+    def __init__(self, chroma_path: str = "data/embeddings"):
         """
         Initialize data retriever
         

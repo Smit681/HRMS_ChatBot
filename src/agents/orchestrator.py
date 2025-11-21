@@ -53,7 +53,7 @@ class MultiAgentOrchestrator:
     
     def __init__(
         self,
-        chroma_path: str = "./chroma_db",
+        chroma_path: str = "data/embeddings",
         ollama_model: str = "qwen2.5:14b"
     ):
         """
