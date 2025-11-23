@@ -1,25 +1,51 @@
+"""
+Production ETL Pipeline - Data Processing & Embedding Generation
+================================================================
+
+Loads HR data from JSON files, cleans it, chunks intelligently,
+generates embeddings, and stores in ChromaDB.
+"""
+
 import json
+import sys
 from pathlib import Path
 from typing import List, Dict
+import re
+
+# Add parent directory to path
+sys.path.append(str(Path(__file__).parent.parent.parent))
+
+from src.config import Config
 import chromadb
 from llama_index.core import Document
 from llama_index.core.node_parser import SemanticSplitterNodeParser
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.core.schema import TextNode
 from tqdm import tqdm
-import re
+
 
 class ProductionETL:
+    """
+    ETL Pipeline for HR Data
+    
+    Steps:
+    1. Load JSON files
+    2. Clean text (handle NaT, nan, None)
+    3. Chunk documents intelligently
+    4. Generate embeddings
+    5. Store in ChromaDB
+    """
+    
     def __init__(self):
-        print("🚀 Initializing Production ETL Pipeline...")
+        print("Initializing Production ETL Pipeline...")
         
-        # Initialize better embedding model (BGE-large)
-        print("📥 Loading BGE-large embedding model (this may take a moment)...")
+        # Load embedding model from config
+        print(f"Loading {Config.EMBEDDING_MODEL}...")
         self.embed_model = HuggingFaceEmbedding(
-            model_name="BAAI/bge-large-en-v1.5",
-            device="cuda"  # Use your T4 GPU
+            model_name=Config.EMBEDDING_MODEL,
+            device=Config.EMBEDDING_DEVICE
         )
-        print("✓ Embedding model loaded on GPU")
+        print(f"Model loaded on {Config.EMBEDDING_DEVICE}")
         
         # Initialize semantic chunker
         self.splitter = SemanticSplitterNodeParser(
@@ -27,15 +53,14 @@ class ProductionETL:
             breakpoint_percentile_threshold=95,
             embed_model=self.embed_model
         )
-        print("✓ Semantic chunker initialized")
+        print("Semantic chunker ready")
         
         # Connect to ChromaDB
-        self.client = chromadb.PersistentClient(path="data/embeddings")
-        print("✓ Connected to ChromaDB")
+        self.client = chromadb.PersistentClient(path=Config.CHROMA_DB_PATH)
+        print(f"ChromaDB connected: {Config.CHROMA_DB_PATH}")
     
     def clean_text(self, text: str) -> str:
-        """Clean text data automatically"""
-        # Replace missing value indicators
+        """Clean text - replace missing value indicators"""
         replacements = {
             'NaT': '[Not Available]',
             ' nan': ' [Not Specified]',
@@ -51,12 +76,11 @@ class ProductionETL:
         
         # Clean whitespace
         text = re.sub(r'\s+', ' ', text).strip()
-        
         return text
     
     def extract_employee_metadata(self, summary: str, emp_id: int) -> Dict:
-        """Extract structured metadata from employee text"""
-        # Extract visa types (get most recent)
+        """Extract structured metadata from employee summary"""
+        # Get most recent visa type
         visa_matches = re.findall(r'Visa type: ([A-Za-z0-9\- ]+)', summary)
         current_visa = visa_matches[-1].strip() if visa_matches else "Unknown"
         
@@ -68,13 +92,9 @@ class ProductionETL:
         assignment_match = re.search(r'Assignment: (\w+)', summary)
         assignment = assignment_match.group(1) if assignment_match else "Unknown"
         
-        # Check termination status
+        # Check termination
         is_terminated = ('Termination Date:' in summary and 
                         'Termination Date: [Not Available]' not in summary)
-        
-        # Extract salary
-        salary_match = re.search(r'Salary of \$(\d+\.?\d*)', summary)
-        has_salary = bool(salary_match and salary_match.group(1) != 'nan')
         
         return {
             'type': 'employee',
@@ -82,36 +102,36 @@ class ProductionETL:
             'visa_type': current_visa,
             'employment_type': employment_type,
             'assignment': assignment,
-            'is_terminated': is_terminated,
-            'has_salary': has_salary
+            'is_terminated': is_terminated
         }
     
-    def load_and_process_employees(self) -> List[TextNode]:
-        """Load and process employee data"""
-        print("\n📋 Processing employee records...")
+    def process_employees(self) -> List[TextNode]:
+        """Load and process employee records"""
+        print("\nProcessing employees...")
         
-        file_path = Path("data/raw/HRWIKI.Employee and Visa sponsorship information.json")
+        file_path = Config.RAW_DATA_DIR / "HRWIKI.Employee and Visa sponsorship information.json"
         with open(file_path, 'r', encoding='utf-8') as f:
             employees = json.load(f)
         
         nodes = []
-        for emp in tqdm(employees, desc="Processing employees"):
+        for emp in tqdm(employees, desc="Employees"):
             emp_id = emp.get('employeeid', 'unknown')
             summary = self.clean_text(emp.get('summary', ''))
             
-            # Create enhanced searchable text
+            # Extract metadata
             metadata = self.extract_employee_metadata(summary, emp_id)
             
+            # Create searchable text
             searchable_text = f"""
-Employee ID: {emp_id}
-{summary}
+                Employee ID: {emp_id}
+                {summary}
 
-Key Information:
-- Current Visa: {metadata['visa_type']}
-- Employment: {metadata['employment_type']}
-- Assignment: {metadata['assignment']}
-- Status: {'Terminated' if metadata['is_terminated'] else 'Active'}
-            """.strip()
+                Key Information:
+                - Current Visa: {metadata['visa_type']}
+                - Employment: {metadata['employment_type']}
+                - Assignment: {metadata['assignment']}
+                - Status: {'Terminated' if metadata['is_terminated'] else 'Active'}
+                            """.strip()
             
             # Create node
             node = TextNode(
@@ -121,12 +141,12 @@ Key Information:
             )
             nodes.append(node)
         
-        print(f"✓ Processed {len(nodes)} employee records")
+        print(f"✅ Processed {len(nodes)} employees")
         return nodes
     
-    def load_and_process_documents(self, file_path: Path, doc_type: str, 
-                                   plan_name: str) -> List[TextNode]:
-        """Load and intelligently chunk documents"""
+    def process_documents(self, file_path: Path, doc_type: str, 
+                         plan_name: str) -> List[TextNode]:
+        """Load and chunk documents intelligently"""
         with open(file_path, 'r', encoding='utf-8') as f:
             records = json.load(f)
         
@@ -134,7 +154,7 @@ Key Information:
         for idx, record in enumerate(records):
             content = self.clean_text(record.get('content', ''))
             
-            # Create LlamaIndex document
+            # Create document
             doc = Document(
                 text=content,
                 metadata={
@@ -144,11 +164,11 @@ Key Information:
                 }
             )
             
-            # Use semantic chunking for large documents
+            # Chunk large documents
             if len(content.split()) > 400:
                 nodes = self.splitter.get_nodes_from_documents([doc])
                 
-                # Add chunk-specific metadata
+                # Add chunk metadata
                 for chunk_idx, node in enumerate(nodes):
                     node.id_ = f"{doc_type}_{plan_name}_{idx}_chunk_{chunk_idx}"
                     node.metadata.update({
@@ -158,7 +178,7 @@ Key Information:
                 
                 all_nodes.extend(nodes)
             else:
-                # Small content - no chunking
+                # Small content - no chunking needed
                 node = TextNode(
                     text=content,
                     id_=f"{doc_type}_{plan_name}_{idx}",
@@ -172,12 +192,12 @@ Key Information:
         
         return all_nodes
     
-    def add_nodes_to_collection(self, collection_name: str, nodes: List[TextNode]):
+    def add_to_chromadb(self, collection_name: str, nodes: List[TextNode]):
         """Add nodes to ChromaDB with embeddings"""
         # Get or create collection
         collection = self.client.get_or_create_collection(
             name=collection_name,
-            metadata={"hnsw:space": "cosine"}  # Use cosine similarity
+            metadata={"hnsw:space": "cosine"}
         )
         
         # Clear existing data
@@ -189,7 +209,7 @@ Key Information:
             pass
         
         # Process in batches
-        batch_size = 50
+        batch_size = Config.EMBEDDING_BATCH_SIZE
         for i in tqdm(range(0, len(nodes), batch_size), 
                      desc=f"Embedding {collection_name}"):
             batch = nodes[i:i + batch_size]
@@ -198,51 +218,39 @@ Key Information:
             texts = [node.get_content() for node in batch]
             embeddings = self.embed_model.get_text_embedding_batch(texts)
             
-            # Prepare data for ChromaDB
-            ids = [node.id_ for node in batch]
-            metadatas = [node.metadata for node in batch]
-            
-            # Add to collection
+            # Add to ChromaDB
             collection.add(
-                ids=ids,
+                ids=[node.id_ for node in batch],
                 documents=texts,
                 embeddings=embeddings,
-                metadatas=metadatas
+                metadatas=[node.metadata for node in batch]
             )
         
-        print(f"✓ Added {len(nodes)} records to {collection_name}")
+        print(f"Added {len(nodes)} records to {collection_name}")
     
-    def run_pipeline(self):
-        """Execute full production ETL pipeline"""
-        print("\n" + "="*70)
-        print("PRODUCTION ETL PIPELINE - PHASE 2")
-        print("="*70)
+    def run(self):
+        """Execute full ETL pipeline"""
+        print("\n" + "=" * 70)
+        print("PRODUCTION ETL PIPELINE")
+        print("=" * 70)
         
         # Process employees
-        employee_nodes = self.load_and_process_employees()
-        self.add_nodes_to_collection("employees", employee_nodes)
+        employee_nodes = self.process_employees()
+        self.add_to_chromadb("employees", employee_nodes)
         
-        # Process insurance and policy documents
+        # Define documents to process
         documents_config = [
-            ("data/raw/HRWIKI.1000 PLAN SBC - ITLIZE GLOBAL.json", "medical", "ppo_1000"),
-            ("data/raw/HRWIKI.2500 PLAN SBC - ITLIZE GLOBAL.json", "medical", "ppo_2500"),
-            ("data/raw/HRWIKI.Medical plan summary - Price Details 2025.json", "medical", "pricing"),
-            ("data/raw/HRWIKI.Delta Dental Benefit Summary.json", "dental", "standard"),
-            ("data/raw/HRWIKI.Itlize Global LLC - DELTA Buy-Up Plan - PPO Plus Premier - Non Par MAC Benefit Summary.json", "dental", "buyup"),
-            ("data/raw/HRWIKI.Delta Vision Benefit Summary.json", "vision", "standard"),
-            ("data/raw/HRWIKI.EmploymentAgreement.json", "employment", "standard"),
-            ("data/raw/HRWIKI.Possible Questions Summary.json", "faq", "common")
+            ("HRWIKI.1000 PLAN SBC - ITLIZE GLOBAL.json", "medical", "ppo_1000"),
+            ("HRWIKI.2500 PLAN SBC - ITLIZE GLOBAL.json", "medical", "ppo_2500"),
+            ("HRWIKI.Medical plan summary - Price Details 2025.json", "medical", "pricing"),
+            ("HRWIKI.Delta Dental Benefit Summary.json", "dental", "standard"),
+            ("HRWIKI.Itlize Global LLC - DELTA Buy-Up Plan - PPO Plus Premier - Non Par MAC Benefit Summary.json", "dental", "buyup"),
+            ("HRWIKI.Delta Vision Benefit Summary.json", "vision", "standard"),
+            ("HRWIKI.EmploymentAgreement.json", "employment", "standard"),
+            ("HRWIKI.Possible Questions Summary.json", "faq", "common")
         ]
         
-        # Group by collection
-        collection_docs = {
-            'medical_plans': [],
-            'dental_plans': [],
-            'vision_plans': [],
-            'employment_agreements': [],
-            'faq': []
-        }
-        
+        # Map doc types to collections
         collection_mapping = {
             'medical': 'medical_plans',
             'dental': 'dental_plans',
@@ -251,66 +259,45 @@ Key Information:
             'faq': 'faq'
         }
         
-        print("\n📋 Processing documents...")
-        for file_path, doc_type, plan_name in documents_config:
-            path = Path(file_path)
-            if path.exists():
-                nodes = self.load_and_process_documents(path, doc_type, plan_name)
+        # Group documents by collection
+        collection_docs = {col: [] for col in Config.COLLECTIONS if col != 'employees'}
+        
+        print("\nProcessing documents...")
+        for filename, doc_type, plan_name in documents_config:
+            file_path = Config.RAW_DATA_DIR / filename
+            if file_path.exists():
+                nodes = self.process_documents(file_path, doc_type, plan_name)
                 collection_name = collection_mapping[doc_type]
                 collection_docs[collection_name].extend(nodes)
-                print(f"  ✓ {path.name}: {len(nodes)} chunks")
+                print(f"{filename}: {len(nodes)} chunks")
         
-        # Add to collections
-        print("\n📊 Adding to ChromaDB collections...")
+        # Add to ChromaDB
+        print("\nAdding to ChromaDB...")
         for collection_name, nodes in collection_docs.items():
             if nodes:
-                self.add_nodes_to_collection(collection_name, nodes)
+                self.add_to_chromadb(collection_name, nodes)
         
         # Summary
-        print("\n" + "="*70)
-        print("ETL PIPELINE COMPLETE")
-        print("="*70)
+        print("\n" + "=" * 70)
+        print("ETL COMPLETE")
+        print("=" * 70)
         
         collections = self.client.list_collections()
-        total_records = 0
+        total = 0
         for col in collections:
-            collection = self.client.get_collection(col.name)
-            count = collection.count()
-            total_records += count
-            print(f"✓ {col.name}: {count} records")
+            count = self.client.get_collection(col.name).count()
+            total += count
+            print(f"{col.name}: {count} records")
         
-        print(f"\n✓ Total records: {total_records}")
-        print(f"✓ Embedding model: BAAI/bge-large-en-v1.5 (1024 dimensions)")
-        print(f"✓ Chunking: Semantic (smart breakpoints)")
-        print("="*70)
-        
-        # Test query
-        print("\n🧪 Testing retrieval...")
-        test_col = self.client.get_collection("employees")
-        
-        # Generate query embedding
-        query = "software developers with H-1B visa"
-        query_embedding = self.embed_model.get_query_embedding(query)
-        
-        results = test_col.query(
-            query_embeddings=[query_embedding],
-            n_results=3
-        )
-        
-        print(f"✓ Query: '{query}'")
-        print(f"✓ Found {len(results['ids'][0])} results")
-        print(f"✓ Top result: {results['ids'][0][0]}")
-        print("\n🎉 Production ETL pipeline successful!")
+        print(f"\nTotal: {total} records")
+        print(f"Model: {Config.EMBEDDING_MODEL}")
+        print("=" * 70)
+
 
 def main():
-    import time
-    start = time.time()
-    
     etl = ProductionETL()
-    etl.run_pipeline()
-    
-    elapsed = time.time() - start
-    print(f"\n⏱ Total time: {elapsed:.2f} seconds")
+    etl.run()
+
 
 if __name__ == "__main__":
     main()

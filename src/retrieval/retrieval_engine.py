@@ -1,28 +1,19 @@
 """
-RETRIEVAL ENGINE - Hybrid Search System
+Retrieval Engine - Hybrid Search System
 
-Combines semantic search (meaning-based) with keyword search (exact match) for optimal retrieval.
-
-WHY HYBRID SEARCH?
-- Semantic alone misses exact terms (employee IDs, policy names)
-- Keyword alone misses conceptual matches ("visa expiring" vs "visa renewal")
-- Hybrid gets best of both worlds
-
-EXAMPLE:
-    Query: "Employee 1503 salary"
-    - Semantic: Finds documents about "compensation", "pay", "earnings"
-    - Keyword: Finds exact match for "1503"
-    - Combined: Gets exact employee with salary context
+Combines semantic search (meaning) with keyword search (exact match).
 """
 
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent))
+
+from config import Config
 import chromadb
-from chromadb.config import Settings
 from sentence_transformers import SentenceTransformer
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 import logging
 import re
-from datetime import datetime
-
 import torch
 
 logging.basicConfig(level=logging.INFO)
@@ -31,133 +22,85 @@ logger = logging.getLogger(__name__)
 
 class RetrievalEngine:
     """
-    Hybrid retrieval system combining semantic and keyword search
+    Hybrid retrieval: semantic search + keyword matching
     
-    SEARCH STRATEGIES:
-    1. Semantic Search: Find similar meaning (embeddings)
-    2. Keyword Search: Find exact terms (BM25-style)
-    3. Hybrid: Combine both with weighting
-    
-    COLLECTIONS:
-    - employee_visa: Employee records and visa information
-    - medical_plans: Health insurance details
-    - dental_plans: Dental coverage
-    - vision_plans: Vision benefits
-    - employment_agreement: Policies and agreements
-    - general_questions: Common Q&A
+    Why hybrid?
+    - Semantic finds similar meaning ("salary" matches "compensation")
+    - Keyword finds exact terms (employee ID "1503")
+    - Combined = best results
     """
     
-    def __init__(
-        self,
-        chroma_path: str = "data/embeddings",
-        embedding_model: str = "BAAI/bge-large-en-v1.5",
-        semantic_weight: float = 0.7,
-        keyword_weight: float = 0.3
-    ):
-        """
-        Initialize retrieval engine
-        
-        Args:
-            chroma_path: Path to ChromaDB persistent storage
-            embedding_model: Sentence transformer model name
-            semantic_weight: Weight for semantic search (0-1)
-            keyword_weight: Weight for keyword search (0-1)
-        """
+    def __init__(self):
+        """Initialize retrieval engine"""
         logger.info("Initializing Retrieval Engine...")
         
-        # Initialize ChromaDB client
-        self.client = chromadb.PersistentClient(
-            path=chroma_path,
-            settings=Settings(anonymized_telemetry=False)
-        )
+        # Connect to ChromaDB
+        self.client = chromadb.PersistentClient(path=Config.CHROMA_DB_PATH)
         
         # Load embedding model
-        logger.info(f"Loading embedding model: {embedding_model}")
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        logger.info(f"Loading {Config.EMBEDDING_MODEL}...")
         self.embedding_model = SentenceTransformer(
-            embedding_model,
-            device=device
+            Config.EMBEDDING_MODEL,
+            device=Config.EMBEDDING_DEVICE
         )
-        logger.info(f"Embedding model loaded on: {device}")
-        
-        # Set hybrid search weights
-        self.semantic_weight = semantic_weight
-        self.keyword_weight = keyword_weight
+        logger.info(f"Model loaded on {Config.EMBEDDING_DEVICE}")
         
         # Load collections
         self.collections = {}
-        collection_names = [
-            "employees",            
-            "medical_plans",
-            "dental_plans",
-            "vision_plans",
-            "employment_agreements", 
-            "faq" 
-        ]
-        
-        for name in collection_names:
+        for name in Config.COLLECTIONS:
             try:
                 self.collections[name] = self.client.get_collection(name)
                 count = self.collections[name].count()
-                logger.info(f"Loaded collection '{name}': {count} documents")
+                logger.info(f"Loaded {name}: {count} documents")
             except Exception as e:
-                logger.warning(f"Collection '{name}' not found: {e}")
+                logger.warning(f"Collection {name} not found: {e}")
         
         logger.info("✅ Retrieval Engine ready!")
     
     def retrieve(
         self,
         query: str,
-        top_k: int = 5,
-        collections: Optional[List[str]] = None,
-        filters: Optional[Dict[str, Any]] = None,
-        strategy: str = "hybrid"
+        top_k: int = None,
+        collections: List[str] = None
     ) -> List[Dict[str, Any]]:
         """
-        Retrieve relevant documents for a query
+        Retrieve relevant documents using hybrid search
         
         Args:
             query: Search query
-            top_k: Number of documents to return
-            collections: List of collection names to search (None = all)
-            filters: Metadata filters {"field": "value"}
-            strategy: "semantic", "keyword", or "hybrid"
+            top_k: Number of results (default from config)
+            collections: Which collections to search (default: all)
         
         Returns:
-            List of documents with scores and metadata
+            List of documents with scores
         """
-        logger.info(f"Retrieving top-{top_k} documents for: {query}")
+        top_k = top_k or Config.TOP_K
+        collections = collections or list(self.collections.keys())
         
-        # Determine which collections to search
-        if collections is None:
-            collections = list(self.collections.keys())
+        logger.info(f"Retrieving top-{top_k} for: {query}")
         
-        # Execute appropriate search strategy
-        if strategy == "semantic":
-            results = self._semantic_search(query, top_k, collections, filters)
-        elif strategy == "keyword":
-            results = self._keyword_search(query, top_k, collections, filters)
-        else:  # hybrid
-            results = self._hybrid_search(query, top_k, collections, filters)
+        # Get semantic results
+        semantic_results = self._semantic_search(query, top_k * 2, collections)
         
-        logger.info(f"Retrieved {len(results)} documents")
-        return results
+        # Get keyword results
+        keyword_results = self._keyword_search(query, top_k * 2, collections)
+        
+        # Combine with weighting
+        combined = self._combine_results(semantic_results, keyword_results)
+        
+        # Return top-k
+        final_results = combined[:top_k]
+        logger.info(f"Retrieved {len(final_results)} documents")
+        
+        return final_results
     
     def _semantic_search(
         self,
         query: str,
         top_k: int,
-        collections: List[str],
-        filters: Optional[Dict[str, Any]]
+        collections: List[str]
     ) -> List[Dict[str, Any]]:
-        """
-        Semantic search using embeddings
-        
-        HOW IT WORKS:
-        1. Convert query to embedding vector
-        2. Find nearest neighbors in vector space
-        3. Rank by cosine similarity
-        """
+        """Semantic search using embeddings"""
         # Generate query embedding
         query_embedding = self.embedding_model.encode(query).tolist()
         
@@ -170,11 +113,9 @@ class RetrievalEngine:
             collection = self.collections[col_name]
             
             try:
-                # Query ChromaDB
                 results = collection.query(
                     query_embeddings=[query_embedding],
-                    n_results=top_k,
-                    where=filters
+                    n_results=top_k
                 )
                 
                 # Format results
@@ -183,16 +124,14 @@ class RetrievalEngine:
                         'id': results['ids'][0][i],
                         'text': results['documents'][0][i],
                         'metadata': results['metadatas'][0][i],
-                        'distance': results['distances'][0][i],
                         'score': 1 / (1 + results['distances'][0][i]),  # Convert distance to score
-                        'collection': col_name,
-                        'strategy': 'semantic'
+                        'collection': col_name
                     })
             
             except Exception as e:
-                logger.error(f"Error searching collection {col_name}: {e}")
+                logger.error(f"Error in {col_name}: {e}")
         
-        # Sort by score and return top-k
+        # Sort by score
         all_results.sort(key=lambda x: x['score'], reverse=True)
         return all_results[:top_k]
     
@@ -200,18 +139,9 @@ class RetrievalEngine:
         self,
         query: str,
         top_k: int,
-        collections: List[str],
-        filters: Optional[Dict[str, Any]]
+        collections: List[str]
     ) -> List[Dict[str, Any]]:
-        """
-        Keyword-based search (BM25-style)
-        
-        HOW IT WORKS:
-        1. Extract keywords from query
-        2. Match against document text
-        3. Score by term frequency and rarity
-        """
-        # Extract important keywords (simple approach)
+        """Keyword search - exact term matching"""
         keywords = self._extract_keywords(query)
         
         all_results = []
@@ -223,16 +153,16 @@ class RetrievalEngine:
             collection = self.collections[col_name]
             
             try:
-                # Get all documents (ChromaDB doesn't have native keyword search)
+                # Get all documents from collection
                 all_docs = collection.get()
                 
                 # Score each document
                 for i in range(len(all_docs['ids'])):
                     doc_text = all_docs['documents'][i].lower()
                     
-                    # Simple keyword scoring
+                    # Count keyword matches
                     score = sum(
-                        doc_text.count(kw.lower()) * (1 + 1/len(kw))  # Weight by keyword rarity
+                        doc_text.count(kw.lower()) * (1 + 1/len(kw))
                         for kw in keywords
                     )
                     
@@ -242,36 +172,44 @@ class RetrievalEngine:
                             'text': all_docs['documents'][i],
                             'metadata': all_docs['metadatas'][i],
                             'score': score,
-                            'collection': col_name,
-                            'strategy': 'keyword'
+                            'collection': col_name
                         })
             
             except Exception as e:
-                logger.error(f"Error searching collection {col_name}: {e}")
+                logger.error(f"Error in {col_name}: {e}")
         
-        # Sort by score and return top-k
+        # Sort by score
         all_results.sort(key=lambda x: x['score'], reverse=True)
         return all_results[:top_k]
     
-    def _hybrid_search(
+    def _extract_keywords(self, query: str) -> List[str]:
+        """Extract important keywords from query"""
+        # Stop words to ignore
+        stop_words = {
+            'the', 'is', 'at', 'which', 'on', 'and', 'or', 'a', 'an',
+            'what', 'how', 'when', 'where', 'who', 'why', 'show', 'me',
+            'tell', 'about', 'for', 'with', 'in', 'to', 'of'
+        }
+        
+        # Split into words
+        words = re.findall(r'\b\w+\b', query)
+        
+        # Keep important terms (not stop words, or numbers/uppercase)
+        keywords = [
+            word for word in words
+            if word.lower() not in stop_words or word.isupper() or word.isdigit()
+        ]
+        
+        return keywords
+    
+    def _combine_results(
         self,
-        query: str,
-        top_k: int,
-        collections: List[str],
-        filters: Optional[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
-        """
-        Hybrid search combining semantic and keyword
-        
-        FORMULA:
-        final_score = (semantic_weight * semantic_score) + (keyword_weight * keyword_score)
-        """
-        # Get results from both strategies
-        semantic_results = self._semantic_search(query, top_k * 2, collections, filters)
-        keyword_results = self._keyword_search(query, top_k * 2, collections, filters)
-        
-        # Normalize scores to 0-1 range
-        def normalize_scores(results):
+        semantic_results: List[Dict],
+        keyword_results: List[Dict]
+    ) -> List[Dict]:
+        """Combine semantic and keyword results with weighting"""
+        # Normalize scores to 0-1
+        def normalize(results):
             if not results:
                 return results
             max_score = max(r['score'] for r in results)
@@ -280,67 +218,33 @@ class RetrievalEngine:
                     r['score'] = r['score'] / max_score
             return results
         
-        semantic_results = normalize_scores(semantic_results)
-        keyword_results = normalize_scores(keyword_results)
+        semantic_results = normalize(semantic_results)
+        keyword_results = normalize(keyword_results)
         
-        # Combine results
+        # Combine by document ID
         combined = {}
         
         for result in semantic_results:
             doc_id = result['id']
             combined[doc_id] = result.copy()
-            combined[doc_id]['score'] = self.semantic_weight * result['score']
-            combined[doc_id]['strategy'] = 'hybrid'
+            combined[doc_id]['score'] = Config.SEMANTIC_WEIGHT * result['score']
         
         for result in keyword_results:
             doc_id = result['id']
             if doc_id in combined:
-                # Add keyword score to existing semantic score
-                combined[doc_id]['score'] += self.keyword_weight * result['score']
+                combined[doc_id]['score'] += Config.KEYWORD_WEIGHT * result['score']
             else:
-                # New document only from keyword search
                 combined[doc_id] = result.copy()
-                combined[doc_id]['score'] = self.keyword_weight * result['score']
-                combined[doc_id]['strategy'] = 'hybrid'
+                combined[doc_id]['score'] = Config.KEYWORD_WEIGHT * result['score']
         
         # Convert to list and sort
         final_results = list(combined.values())
         final_results.sort(key=lambda x: x['score'], reverse=True)
         
-        return final_results[:top_k]
+        return final_results
     
-    def _extract_keywords(self, query: str) -> List[str]:
-        """
-        Extract important keywords from query
-        
-        RULES:
-        - Remove stop words (the, is, and, etc.)
-        - Keep numbers (employee IDs, amounts)
-        - Keep capitalized terms (H-1B, PPO, etc.)
-        - Split on spaces and punctuation
-        """
-        # Simple stop words list
-        stop_words = {
-            'the', 'is', 'at', 'which', 'on', 'and', 'or', 'a', 'an',
-            'what', 'how', 'when', 'where', 'who', 'why', 'show', 'me',
-            'tell', 'about', 'for', 'with', 'in', 'to', 'of'
-        }
-        
-        # Split and clean
-        words = re.findall(r'\b\w+\b', query)
-        
-        # Keep important terms
-        keywords = [
-            word for word in words
-            if word.lower() not in stop_words or word.isupper() or word.isdigit()
-        ]
-        
-        return keywords
-    
-    def get_collection_stats(self) -> Dict[str, int]:
-        """
-        Get document counts for all collections
-        """
+    def get_stats(self) -> Dict[str, int]:
+        """Get document counts for all collections"""
         stats = {}
         for name, collection in self.collections.items():
             stats[name] = collection.count()
@@ -348,42 +252,37 @@ class RetrievalEngine:
 
 
 def main():
-    """
-    Test retrieval engine
-    """
-    print("="*70)
+    """Test retrieval engine"""
+    print("=" * 70)
     print("RETRIEVAL ENGINE - TESTING")
-    print("="*70)
+    print("=" * 70)
     
-    # Initialize engine
     engine = RetrievalEngine()
     
-    # Show collection stats
+    # Show stats
     print("\nCollection Stats:")
-    stats = engine.get_collection_stats()
-    for name, count in stats.items():
+    for name, count in engine.get_stats().items():
         print(f"  {name}: {count} documents")
     
     # Test queries
     test_queries = [
-        ("What is the copay for primary care?", "semantic"),
-        ("Employee 1503 salary", "keyword"),
-        ("H-1B visa expiration", "hybrid"),
+        "What is the copay for primary care?",
+        "Employee 1503 salary",
+        "H-1B visa benefits"
     ]
     
-    for query, strategy in test_queries:
-        print(f"\n{'='*70}")
+    for query in test_queries:
+        print(f"\n{'=' * 70}")
         print(f"Query: {query}")
-        print(f"Strategy: {strategy}")
-        print("-"*70)
+        print("-" * 70)
         
-        results = engine.retrieve(query, top_k=3, strategy=strategy)
+        results = engine.retrieve(query, top_k=3)
         
         for i, result in enumerate(results, 1):
-            print(f"\n{i}. [Score: {result['score']:.3f}] {result['collection']}")
-            print(f"   {result['text'][:200]}...")
+            print(f"\n{i}. [{result['collection']}] Score: {result['score']:.3f}")
+            print(f"   {result['text'][:150]}...")
     
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("✅ Testing complete!")
 
 

@@ -2,13 +2,15 @@
 python-dotenv
 
 # LLM and Embeddings
+transformers
 sentence-transformers
 llama-index
 llama-index-embeddings-huggingface
 llama-index-core
 
-# Vector Database
+# Database
 chromadb
+pymongo
 
 # Data Processing
 pandas

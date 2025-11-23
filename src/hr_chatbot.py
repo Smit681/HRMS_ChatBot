@@ -1,323 +1,303 @@
 """
-HR CHATBOT - Main Interface with Smart Routing
+HR Chatbot - Main Interface
+============================
 
-This is the primary interface for your HR chatbot. It intelligently routes queries
-between a fast simple path and a thorough multi-agent path based on complexity.
+Intelligent HR assistant that routes queries to appropriate pipelines:
+- Simple queries → Simple pipeline (ChromaDB + LLM)
+- Aggregation queries → Aggregation pipeline (MongoDB + LLM)
+- Ultra-complex queries → Ultra-complex pipeline (MongoDB + Batch LLM)
 
-USAGE:
-    from hr_chatbot import HRChatbot
-    
-    chatbot = HRChatbot()
-    result = chatbot.ask("How many H-1B employees need renewal?")
-    print(result['answer'])
-
-ARCHITECTURE:
-    User Query → Complexity Detection → Route to Appropriate Path
-                                      ├─→ Simple Path (fast, 70% of queries)
-                                      └─→ Multi-Agent Path (thorough, 30% of queries)
+Uses BERT classifier for accurate query routing.
 """
 
-import os
 import sys
-from typing import Dict, Any, List
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent))
+
+from classification.query_classifier import QueryClassifier
+from pipelines.simple_pipeline import SimplePipeline
+from pipelines.aggregation_pipeline import AggregationPipeline
+from pipelines.ultra_complex_pipeline import UltraComplexPipeline
+from typing import Dict, Any
 import logging
 from datetime import datetime
 
-# Add parent directory to path for imports
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from retrieval.rag_pipeline import SimpleRAGPipeline
-from agents.orchestrator import MultiAgentOrchestrator
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
 class HRChatbot:
-    """
-    Unified HR Chatbot Interface
-    
-    Automatically routes queries to the optimal processing path:
-    - Simple Path: Direct retrieval + LLM (fast)
-    - Multi-Agent Path: Specialized agents (thorough)
-    
-    WHY TWO PATHS?
-    - 70% of queries are simple lookups → fast path is sufficient
-    - 30% need complex reasoning → multi-agent path ensures accuracy
-    
-    COMPLEXITY DETECTION:
-    - Simple: Direct facts, single entity, no calculations
-    - Complex: Aggregations, comparisons, predictions, multi-step reasoning
-    """
-    
-    def __init__(
-        self,
-        chroma_path: str = "data/embeddings",
-        ollama_model: str = "qwen2.5:14b",
-        auto_route: bool = True
-    ):
-        """
-        Initialize HR Chatbot
+    def __init__(self):
+        """Initialize HR Chatbot"""
+        logger.info("=" * 70)
+        logger.info("HR CHATBOT - INITIALIZING")
+        logger.info("=" * 70)
         
-        Args:
-            chroma_path: Path to ChromaDB persistent storage
-            ollama_model: Ollama model name for LLM
-            auto_route: Enable automatic routing between simple/complex paths
-        """
-        logger.info("Initializing HR Chatbot...")
+        # Initialize BERT classifier
+        logger.info("Loading BERT classifier...")
+        self.classifier = QueryClassifier()
         
-        self.auto_route = auto_route
-        self.chroma_path = chroma_path
-        self.ollama_model = ollama_model
+        # Initialize pipelines
+        logger.info("Loading pipelines...")
+        self.simple_pipeline = SimplePipeline()
+        self.aggregation_pipeline = AggregationPipeline()
+        self.ultra_complex_pipeline = UltraComplexPipeline()
         
-        # Initialize both paths
-        try:
-            logger.info("Loading Simple RAG Pipeline...")
-            self.simple_pipeline = SimpleRAGPipeline(
-                chroma_path=chroma_path,
-                ollama_model=ollama_model
-            )
-            
-            logger.info("Loading Multi-Agent Orchestrator...")
-            self.orchestrator = MultiAgentOrchestrator(
-                chroma_path=chroma_path,
-                ollama_model=ollama_model
-            )
-            
-            logger.info("✅ HR Chatbot ready!")
-            
-        except Exception as e:
-            logger.error(f"Failed to initialize chatbot: {e}")
-            raise
+        logger.info("=" * 70)
+        logger.info("✅ HR CHATBOT READY!")
+        logger.info("=" * 70)
     
     def ask(
         self,
         query: str,
-        force_path: str = None,
-        session_id: str = None
+        auto_confirm_ultra: bool = False
     ) -> Dict[str, Any]:
         """
         Ask a question to the HR chatbot
         
         Args:
             query: User's question
-            force_path: Force 'simple' or 'complex' path (overrides auto-routing)
-            session_id: Session identifier for conversation tracking
+            auto_confirm_ultra: Auto-confirm ultra-complex (skip prompt)
         
         Returns:
             {
-                'answer': str,           # Natural language response
-                'sources': List[str],    # Source documents used
-                'path_used': str,        # 'simple' or 'complex'
-                'confidence': float,     # Answer confidence (0-1)
-                'processing_time': float # Seconds taken
+                'answer': str,
+                'query_type': str,
+                'confidence': float,
+                'processing_time': float,
+                'pipeline_used': str,
+                'metadata': dict
             }
         """
         start_time = datetime.now()
-        logger.info(f"Processing query: {query}")
         
-        # Determine which path to use
-        if force_path:
-            use_complex_path = (force_path == 'complex')
-            logger.info(f"Forced to use {force_path} path")
-        elif self.auto_route:
-            use_complex_path = self._should_use_complex_path(query)
-            logger.info(f"Auto-routed to {'complex' if use_complex_path else 'simple'} path")
-        else:
-            use_complex_path = False  # Default to simple
+        print("\n" + "=" * 70)
+        print(f"Q: {query}")
+        print("=" * 70)
         
-        # Route to appropriate path
-        try:
-            if use_complex_path:
-                result = self.orchestrator.process_query(query, session_id)
-                path_used = 'complex'
-            else:
-                result = self.simple_pipeline.query(query)
-                path_used = 'simple'
+        # Step 1: Classify query using BERT
+        print(f"\n🔍 Analyzing query...")
+        classification = self.classifier.classify(query)
+        
+        query_type = classification['label']
+        bert_confidence = classification['confidence']
+        
+        print(f"📊 Query Type: {query_type} (confidence: {bert_confidence:.2f})")
+        
+        # Step 2: Route to appropriate pipeline
+        if query_type == 'ultra_complex':
+            # Ultra-complex - needs user confirmation
+            print(f"\n⚠️  ULTRA-COMPLEX QUERY DETECTED")
+            print(f"⏱️  Estimated time: ~2 minutes")
+            print(f"📋 This will perform deep analysis on all employees")
             
-            # Add metadata
-            processing_time = (datetime.now() - start_time).total_seconds()
-            result['path_used'] = path_used
-            result['processing_time'] = processing_time
+            # Ask for confirmation (unless auto-confirmed)
+            if not auto_confirm_ultra:
+                response = input("\n❓ Continue? (yes/no): ").strip().lower()
+                
+                if response not in ['yes', 'y']:
+                    return {
+                        'answer': "Query cancelled by user.",
+                        'query_type': query_type,
+                        'confidence': 0.0,
+                        'processing_time': 0,
+                        'pipeline_used': 'ultra_complex',
+                        'metadata': {'cancelled': True},
+                        'cancelled': True
+                    }
             
-            logger.info(f"✅ Query processed in {processing_time:.2f}s via {path_used} path")
-            return result
+            print(f"\n🚀 Processing with ultra-complex pipeline...")
+            result = self.ultra_complex_pipeline.process(query)
             
-        except Exception as e:
-            logger.error(f"Query processing failed: {e}")
-            return {
-                'answer': f"I encountered an error processing your query: {str(e)}",
-                'sources': [],
-                'path_used': path_used if 'path_used' in locals() else 'unknown',
-                'confidence': 0.0,
-                'processing_time': (datetime.now() - start_time).total_seconds(),
-                'error': str(e)
+            response = {
+                'answer': result['answer'],
+                'query_type': query_type,
+                'confidence': bert_confidence,
+                'processing_time': result['processing_time'],
+                'pipeline_used': 'ultra_complex',
+                'metadata': {
+                    'total_analyzed': result['total_analyzed'],
+                    'batch_results': len(result['batch_results'])
+                }
             }
+        
+        elif query_type == 'aggregation':
+            # Aggregation - use MongoDB
+            print(f"\n🚀 Processing with aggregation pipeline...")
+            result = self.aggregation_pipeline.process(query)
+            
+            response = {
+                'answer': result['answer'],
+                'query_type': query_type,
+                'confidence': result['confidence'],
+                'processing_time': (datetime.now() - start_time).total_seconds(),
+                'pipeline_used': 'aggregation',
+                'metadata': {
+                    'mongodb_operation': result['mongodb_operation'],
+                    'result': result['result'],
+                    'result_type': result['result_type']
+                }
+            }
+        
+        else:  # simple
+            # Simple - use ChromaDB retrieval
+            print(f"\n🚀 Processing with simple pipeline...")
+            result = self.simple_pipeline.process(query)
+            
+            response = {
+                'answer': result['answer'],
+                'query_type': query_type,
+                'confidence': result['confidence'],
+                'processing_time': (datetime.now() - start_time).total_seconds(),
+                'pipeline_used': 'simple',
+                'metadata': {
+                    'num_sources': result['num_sources'],
+                    'sources': result['sources'][:3]  # Top 3 sources
+                }
+            }
+        
+        # Display results
+        self._display_results(response)
+        
+        return response
     
-    def _should_use_complex_path(self, query: str) -> bool:
-        """
-        Determine if query requires multi-agent (complex) path
+    def _display_results(self, response: Dict[str, Any]):
+        """Display results to user"""
+        print(f"\n{'=' * 70}")
+        print(f"ANSWER")
+        print("=" * 70)
+        print(f"\n{response['answer']}")
+        print(f"\n{'=' * 70}")
+        print(f"📊 Query Type: {response['query_type']}")
+        print(f"🔧 Pipeline: {response['pipeline_used']}")
+        print(f"⏱️  Time: {response['processing_time']:.1f}s")
+        print(f"✅ Confidence: {response['confidence']:.2f}")
         
-        SIMPLE PATH INDICATORS (use simple):
-        - Direct fact lookup: "What is X's salary?"
-        - Single entity queries: "Show me employee 1503"
-        - Simple definitions: "What is H-1B?"
+        # Show additional metadata based on pipeline
+        if response['pipeline_used'] == 'aggregation':
+            print(f"🔢 Result: {response['metadata'].get('result')}")
+        elif response['pipeline_used'] == 'ultra_complex':
+            print(f"📈 Employees Analyzed: {response['metadata'].get('total_analyzed')}")
+        elif response['pipeline_used'] == 'simple':
+            print(f"📚 Sources: {response['metadata'].get('num_sources')}")
         
-        COMPLEX PATH INDICATORS (use multi-agent):
-        - Aggregations: "How many", "Average", "Total"
-        - Comparisons: "Compare X and Y", "Difference between"
-        - Filters: "Employees with", "Only show", "Exclude"
-        - Predictions: "Will", "Expected to", "Forecast"
-        - Multi-step: "Find X and calculate Y"
-        
-        Returns:
-            True if complex path needed, False for simple path
-        """
-        query_lower = query.lower()
-        
-        # Keywords indicating complex queries
-        aggregation_keywords = ['how many', 'count', 'total', 'average', 'mean', 'sum']
-        comparison_keywords = ['compare', 'difference', 'versus', 'vs', 'better', 'best']
-        filter_keywords = ['with', 'where', 'who have', 'only', 'exclude', 'filter']
-        prediction_keywords = ['will', 'forecast', 'predict', 'trend', 'expected']
-        calculation_keywords = ['calculate', 'compute', 'percentage', 'ratio']
-        
-        # Check for complex indicators
-        for keyword in (aggregation_keywords + comparison_keywords + 
-                       filter_keywords + prediction_keywords + calculation_keywords):
-            if keyword in query_lower:
-                return True
-        
-        # Simple queries (direct lookup)
-        if any(phrase in query_lower for phrase in ['what is', 'show me', 'tell me about']):
-            # But check if it's a complex "what is" like "what is the average"
-            if not any(word in query_lower for word in ['average', 'total', 'count', 'how many']):
-                return False
-        
-        # Default to simple path (conservative approach)
-        return False
-    
-    def batch_ask(
-        self,
-        queries: List[str],
-        force_path: str = None,
-        session_id: str = None
-    ) -> List[Dict[str, Any]]:
-        """
-        Process multiple queries in batch
-        
-        Useful for:
-        - Testing multiple questions
-        - Report generation
-        - Batch analysis
-        
-        Args:
-            queries: List of questions
-            force_path: Force all to use same path
-            session_id: Session ID for all queries
-        
-        Returns:
-            List of result dictionaries
-        """
-        logger.info(f"Processing batch of {len(queries)} queries")
-        results = []
-        
-        for i, query in enumerate(queries, 1):
-            logger.info(f"Batch {i}/{len(queries)}: {query}")
-            result = self.ask(query, force_path, session_id)
-            results.append(result)
-        
-        logger.info(f"✅ Batch processing complete")
-        return results
+        print("=" * 70)
     
     def get_stats(self) -> Dict[str, Any]:
-        """
-        Get chatbot statistics and health info
+        """Get chatbot statistics"""
+        from retrieval.retrieval_engine import RetrievalEngine
+        from pymongo import MongoClient
+        from config import Config
         
-        Returns:
-            {
-                'status': str,
-                'collections': dict,
-                'models_loaded': bool,
-                'cache_stats': dict
-            }
-        """
-        stats = {
-            'status': 'operational',
-            'collections': {},
-            'models_loaded': True,
-            'timestamp': datetime.now().isoformat()
+        # ChromaDB stats
+        retrieval_engine = RetrievalEngine()
+        chroma_stats = retrieval_engine.get_stats()
+        
+        # MongoDB stats
+        client = MongoClient(Config.MONGODB_URI)
+        db = client[Config.MONGODB_DB_NAME]
+        mongo_stats = {
+            'employees': db['employees_structured'].count_documents({})
         }
+        client.close()
         
-        try:
-            # Get ChromaDB collection stats
-            collections = self.simple_pipeline.retrieval_engine.client.list_collections()
-            for col in collections:
-                stats['collections'][col.name] = col.count()
-            
-        except Exception as e:
-            logger.error(f"Failed to get stats: {e}")
-            stats['status'] = 'degraded'
-            stats['error'] = str(e)
-        
-        return stats
+        return {
+            'status': 'operational',
+            'chromadb_collections': chroma_stats,
+            'mongodb_collections': mongo_stats,
+            'total_chromadb_docs': sum(chroma_stats.values()),
+            'total_mongodb_docs': sum(mongo_stats.values()),
+            'classifier_model': 'DistilBERT (fine-tuned)',
+            'llm_model': Config.LLM_MODEL
+        }
+    
+    def close(self):
+        """Close all connections"""
+        logger.info("Closing connections...")
+        self.aggregation_pipeline.close()
+        self.ultra_complex_pipeline.close()
+        logger.info("✅ Connections closed")
 
 
 def main():
-    """
-    Example usage and testing
-    """
-    print("="*70)
-    print("HR CHATBOT - TESTING")
-    print("="*70)
+    """Interactive chatbot mode"""
+    print("=" * 70)
+    print("HR CHATBOT - INTERACTIVE MODE")
+    print("=" * 70)
     
     # Initialize chatbot
     chatbot = HRChatbot()
     
-    # Test queries (mix of simple and complex)
+    # Show stats
+    print("\n📊 SYSTEM STATS:")
+    stats = chatbot.get_stats()
+    print(f"  - ChromaDB Documents: {stats['total_chromadb_docs']}")
+    print(f"  - MongoDB Employees: {stats['mongodb_collections']['employees']}")
+    print(f"  - LLM: {stats['llm_model']}")
+    print(f"  - Classifier: {stats['classifier_model']}")
+    
+    # Test queries
+    print("\n" + "=" * 70)
+    print("RUNNING TEST QUERIES")
+    print("=" * 70)
+    
     test_queries = [
-        # Simple queries (should use simple path)
-        "What is the copay for primary care in PPO 1000?",
-        "What is employee 1503's position?",
-        "Tell me about dental benefits",
+        # Simple
+        ("What is the copay for primary care in PPO 1000?", "simple"),
         
-        # Complex queries (should use multi-agent path)
-        "How many employees have H-1B visas?",
-        "What is the average salary of technical project managers?",
-        "Compare PPO 1000 and PPO 2500 medical plans",
+        # Aggregation
+        ("How many employees have H-1B visas?", "aggregation"),
+        ("Calculate the average salary", "aggregation"),
+        
+        #Ultra-complex
+        ("Predict which employees are candidates for raises", "ultra_complex")
     ]
     
-    for query in test_queries:
-        print(f"\n{'='*70}")
-        print(f"Q: {query}")
-        print("-"*70)
+    for query, expected_type in test_queries:
+        result = chatbot.ask(query, auto_confirm_ultra=True)
         
-        result = chatbot.ask(query)
+        # Verify classification
+        if result['query_type'] == expected_type:
+            print(f"\n✅ Classification correct: {expected_type}")
+        else:
+            print(f"\n⚠️  Classification mismatch: expected {expected_type}, got {result['query_type']}")
         
-        print(f"Path: {result['path_used']}")
-        print(f"Time: {result['processing_time']:.2f}s")
-        print(f"Confidence: {result.get('confidence', 'N/A')}")
-        print(f"\nA: {result['answer']}")
-        
-        if result.get('sources'):
-            print(f"\nSources: {len(result['sources'])} documents")
+        input("\nPress Enter to continue to next query...")
     
-    print("\n" + "="*70)
-    print("✅ Testing complete!")
+    print("\n" + "=" * 70)
+    print("✅ ALL TESTS COMPLETE!")
+    print("=" * 70)
     
-    # Show stats
-    print("\n" + "="*70)
-    print("CHATBOT STATS")
-    print("="*70)
-    stats = chatbot.get_stats()
-    print(f"Status: {stats['status']}")
-    print(f"Collections loaded: {len(stats['collections'])}")
-    for name, count in stats['collections'].items():
-        print(f"  - {name}: {count} documents")
+    # Interactive mode
+    print("\n💬 Entering interactive mode (type 'exit' to quit)...")
+    print("Commands:")
+    print("  - Type any question")
+    print("  - 'stats' - Show system statistics")
+    print("  - 'exit' - Quit")
+    
+    while True:
+        print("\n" + "-" * 70)
+        user_query = input("Your question: ").strip()
+        
+        if user_query.lower() in ['exit', 'quit', 'q']:
+            print("\n👋 Goodbye!")
+            break
+        
+        if user_query.lower() == 'stats':
+            stats = chatbot.get_stats()
+            print(f"\n📊 System Stats:")
+            print(f"  ChromaDB: {stats['total_chromadb_docs']} documents")
+            print(f"  MongoDB: {stats['mongodb_collections']['employees']} employees")
+            print(f"  Status: {stats['status']}")
+            continue
+        
+        if not user_query:
+            continue
+        
+        chatbot.ask(user_query)
+    
+    # Cleanup
+    chatbot.close()
 
 
 if __name__ == "__main__":
