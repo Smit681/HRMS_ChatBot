@@ -20,7 +20,7 @@ from config import Config
 from retrieval.retrieval_engine import RetrievalEngine
 from retrieval.context_builder import ContextBuilder
 from retrieval.llm_interface import OllamaLLM
-from typing import Dict, Any
+from typing import Dict, Any, Iterator
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -95,6 +95,55 @@ class SimplePipeline:
         
         logger.info(f"✅ Query complete (confidence: {confidence:.2f})")
         return result
+    
+    def process_stream(self, query: str) -> Iterator[dict]:
+        """
+        Process query with streaming response
+        
+        Args:
+            query: User's question
+        
+        Yields:
+            dict: Progress updates and token chunks
+        """
+        logger.info(f"[Simple Pipeline] Processing with streaming: {query}")
+        
+        # Step 1: Retrieve (not streamed)
+        yield {'type': 'status', 'message': 'Retrieving documents...'}
+        retrieved_docs = self.retrieval_engine.retrieve(query, top_k=3)
+        
+        if not retrieved_docs:
+            yield {'type': 'error', 'message': 'No documents found'}
+            return
+        
+        yield {'type': 'status', 'message': f'Found {len(retrieved_docs)} documents'}
+        
+        # Step 2: Build context
+        yield {'type': 'status', 'message': 'Building context...'}
+        context = self.context_builder.build_context(retrieved_docs)
+        
+        # Step 3: Generate answer with streaming
+        yield {'type': 'status', 'message': 'Generating answer...'}
+        
+        prompt = self.context_builder.build_prompt(
+            query=query,
+            context=context,
+            system_prompt=Config.SYSTEM_PROMPTS['default']
+        )
+        
+        # Stream tokens
+        for token in self.llm.generate_stream(prompt):
+            yield {'type': 'token', 'content': token}
+        
+        # Send metadata after completion
+        avg_score = sum(doc['score'] for doc in retrieved_docs) / len(retrieved_docs)
+        yield {
+            'type': 'metadata',
+            'sources': retrieved_docs,
+            'num_sources': len(retrieved_docs),
+            'confidence': min(avg_score, 1.0),
+            'pipeline': 'simple'
+        }
     
     def _no_results_response(self, query: str) -> Dict[str, Any]:
         """Handle no results"""

@@ -19,7 +19,7 @@ from config import Config
 from retrieval.llm_interface import OllamaLLM
 from retrieval.context_builder import ContextBuilder
 from agents.mongodb_query_agent import MongoDBQueryAgent
-from typing import Dict, Any
+from typing import Dict, Any, Iterator
 import json
 import logging
 
@@ -89,6 +89,54 @@ class AggregationPipeline:
         
         logger.info("✅ Query complete")
         return result
+    
+    def process_stream(self, query: str) -> Iterator[dict]:
+        """
+        Process aggregation query with streaming
+        
+        Args:
+            query: User's question
+        
+        Yields:
+            dict: Status updates and token chunks
+        """
+        logger.info(f"[Aggregation Pipeline] Processing with streaming: {query}")
+        
+        # Step 1: Execute MongoDB query (not streamed)
+        yield {'type': 'status', 'message': 'Executing MongoDB query...'}
+        mongo_result = self.mongodb_agent.execute(query)
+        
+        if not mongo_result['success']:
+            yield {'type': 'error', 'message': mongo_result.get('error')}
+            return
+        
+        yield {'type': 'status', 'message': f"Result: {mongo_result['result']}"}
+        
+        # Step 2: Format result
+        yield {'type': 'status', 'message': 'Formatting result...'}
+        context = self._format_mongo_result(query, mongo_result)
+        
+        # Step 3: Generate natural language answer with streaming
+        yield {'type': 'status', 'message': 'Generating answer...'}
+        
+        prompt = self.context_builder.build_prompt(
+            query=query,
+            context=context,
+            system_prompt=Config.SYSTEM_PROMPTS['aggregation']
+        )
+        
+        # Stream tokens
+        for token in self.llm.generate_stream(prompt, temperature=0.2):
+            yield {'type': 'token', 'content': token}
+        
+        # Send metadata
+        yield {
+            'type': 'metadata',
+            'mongodb_operation': mongo_result['mongodb_operation'],
+            'result': mongo_result['result'],
+            'result_type': mongo_result['result_type'],
+            'pipeline': 'aggregation'
+        }
     
     def _format_mongo_result(self, query: str, mongo_result: dict) -> str:
         """

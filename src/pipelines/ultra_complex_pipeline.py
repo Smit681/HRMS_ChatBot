@@ -28,7 +28,7 @@ from config import Config
 from retrieval.context_builder import ContextBuilder
 from retrieval.llm_interface import OllamaLLM
 from pymongo import MongoClient
-from typing import Dict, Any, List
+from typing import Dict, Any, Iterator, List
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import logging
 
@@ -102,6 +102,69 @@ class UltraComplexPipeline:
             'answer': final_answer,
             'batch_results': batch_results,
             'total_analyzed': len(employees),
+            'processing_time': processing_time,
+            'pipeline': 'ultra_complex'
+        }
+    
+    def process_stream(self, query: str) -> Iterator[dict]:
+        """
+        Process ultra-complex query with streaming
+        
+        Args:
+            query: User's question
+        
+        Yields:
+            dict: Progress updates and token chunks
+        """
+        import time
+        start_time = time.time()
+        
+        logger.info(f"[Ultra-Complex Pipeline] Processing with streaming: {query}")
+        
+        # Step 1: Fetch employees
+        yield {'type': 'status', 'message': 'Fetching employees from MongoDB...'}
+        employees = self._fetch_employees()
+        
+        if not employees:
+            yield {'type': 'error', 'message': 'No employees found'}
+            return
+        
+        yield {'type': 'status', 'message': f'Fetched {len(employees)} employees'}
+        
+        # Step 2: Create batches
+        yield {'type': 'status', 'message': 'Creating batches...'}
+        batches = self._create_batches(employees)
+        yield {'type': 'status', 'message': f'Created {len(batches)} batches'}
+        
+        # Step 3: Process batches (not streamed - too complex)
+        yield {'type': 'status', 'message': f'Processing {len(batches)} batches in parallel...'}
+        batch_results = self._process_batches_parallel(query, batches)
+        
+        # Step 4: Synthesize with streaming
+        yield {'type': 'status', 'message': 'Synthesizing final answer...'}
+        
+        context = self.context_builder.build_synthesis_context(
+            query=query,
+            batch_results=batch_results,
+            total_employees=len(employees)
+        )
+        
+        prompt = self.context_builder.build_prompt(
+            query=query,
+            context=context,
+            system_prompt=Config.SYSTEM_PROMPTS['synthesis']
+        )
+        
+        # Stream final answer
+        for token in self.llm.generate_stream(prompt, temperature=0.2):
+            yield {'type': 'token', 'content': token}
+        
+        # Send metadata
+        processing_time = time.time() - start_time
+        yield {
+            'type': 'metadata',
+            'total_analyzed': len(employees),
+            'batch_results': len(batch_results),
             'processing_time': processing_time,
             'pipeline': 'ultra_complex'
         }
