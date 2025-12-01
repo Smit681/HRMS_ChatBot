@@ -7,7 +7,9 @@ Sends prompts to Ollama and gets responses back.
 import json
 import sys
 from pathlib import Path
-from typing import Iterator
+from typing import Iterator, AsyncIterator
+import httpx
+import asyncio
 sys.path.append(str(Path(__file__).parent.parent))
 
 from config import Config
@@ -109,28 +111,20 @@ class OllamaLLM:
                 'error': str(e)
             }
 
-    def generate_stream(
+    async def generate_stream(
         self,
         prompt: str,
         temperature: float = None
-    ) -> Iterator[str]:
+    ) -> AsyncIterator[str]:
         """
-        Generate streaming response from LLM
-        
-        Args:
-            prompt: Input text
-            temperature: Randomness (None = use config default)
-        
-        Yields:
-            str: Token chunks as they're generated
+        Generate streaming response from LLM (ASYNC)
         """
         temperature = temperature or Config.LLM_TEMPERATURE
         
-        # Build request
         payload = {
             'model': Config.LLM_MODEL,
             'prompt': prompt,
-            'stream': True,  # Enable streaming
+            'stream': True,
             'options': {
                 'temperature': temperature,
                 'num_predict': Config.LLM_MAX_TOKENS
@@ -140,27 +134,25 @@ class OllamaLLM:
         logger.info(f"Generating streaming response (temp={temperature})...")
         
         try:
-            # Send streaming request
-            response = requests.post(
-                f"{Config.OLLAMA_BASE_URL}/api/generate",
-                json=payload,
-                stream=True,  # Important: stream=True
-                timeout=120
-            )
-            response.raise_for_status()
-            
-            # Yield tokens as they arrive
-            for line in response.iter_lines():
-                if line:
-                    chunk = json.loads(line)
-                    if 'response' in chunk:
-                        yield chunk['response']
+            async with httpx.AsyncClient(timeout=120.0) as client:
+                async with client.stream(
+                    "POST",
+                    f"{Config.OLLAMA_BASE_URL}/api/generate",
+                    json=payload
+                ) as response:
+                    response.raise_for_status()
                     
-                    # Check if done
-                    if chunk.get('done', False):
-                        break
+                    async for line in response.aiter_lines():
+                        if line:
+                            chunk = json.loads(line)
+                            if 'response' in chunk:
+                                yield chunk['response']
+                                await asyncio.sleep(0)  # Yield control
+                            
+                            if chunk.get('done', False):
+                                break
         
-        except requests.exceptions.Timeout:
+        except httpx.TimeoutException:
             logger.error("Request timed out")
             yield "Sorry, the request timed out. Please try again."
         

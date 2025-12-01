@@ -12,6 +12,7 @@ Processing: Retrieve → Build context → LLM → Return
 Speed: 2-3 seconds
 """
 
+import asyncio
 import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
@@ -20,7 +21,7 @@ from config import Config
 from retrieval.retrieval_engine import RetrievalEngine
 from retrieval.context_builder import ContextBuilder
 from retrieval.llm_interface import OllamaLLM
-from typing import Dict, Any, Iterator
+from typing import AsyncIterator, Dict, Any, Iterator
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -96,7 +97,7 @@ class SimplePipeline:
         logger.info(f"✅ Query complete (confidence: {confidence:.2f})")
         return result
     
-    def process_stream(self, query: str) -> Iterator[dict]:
+    async def process_stream(self, query: str) -> AsyncIterator[dict]:
         """
         Process query with streaming response
         
@@ -116,13 +117,18 @@ class SimplePipeline:
             yield {'type': 'error', 'message': 'No documents found'}
             return
         
+        logger.info(f"Retrieved {len(retrieved_docs)} documents")
+        
         yield {'type': 'status', 'message': f'Found {len(retrieved_docs)} documents'}
         
-        # Step 2: Build context
+        # Step 2: Build 
+        logger.info("[2/3] Building context...")
         yield {'type': 'status', 'message': 'Building context...'}
         context = self.context_builder.build_context(retrieved_docs)
         
         # Step 3: Generate answer with streaming
+        logger.info("[3/3] Generating answer...")
+
         yield {'type': 'status', 'message': 'Generating answer...'}
         
         prompt = self.context_builder.build_prompt(
@@ -132,8 +138,9 @@ class SimplePipeline:
         )
         
         # Stream tokens
-        for token in self.llm.generate_stream(prompt):
+        async for token in self.llm.generate_stream(prompt):
             yield {'type': 'token', 'content': token}
+            await asyncio.sleep(0)
         
         # Send metadata after completion
         avg_score = sum(doc['score'] for doc in retrieved_docs) / len(retrieved_docs)
@@ -144,6 +151,7 @@ class SimplePipeline:
             'confidence': min(avg_score, 1.0),
             'pipeline': 'simple'
         }
+        logger.info(f"✅ Query complete (confidence: {min(avg_score, 1.0):.2f})")
     
     def _no_results_response(self, query: str) -> Dict[str, Any]:
         """Handle no results"""

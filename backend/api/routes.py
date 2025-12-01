@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 from bson import ObjectId
 from fastapi import APIRouter, HTTPException, Response
@@ -47,7 +48,7 @@ async def chat_stream(request: ChatRequest):
     async def generate():
         try:
              # Stream from chatbot
-            for chunk in chatbot.ask_stream(
+            async for chunk in chatbot.ask_stream(
                 query=request.query,
                 auto_confirm_ultra=request.auto_confirm_ultra
             ):
@@ -68,6 +69,7 @@ async def chat_stream(request: ChatRequest):
                 
                 # Format as SSE with custom encoder
                 yield f"data: {json.dumps(chunk_dict, cls=SafeJSONEncoder)}\n\n"
+                await asyncio.sleep(0)  # Yield control to event loop
                 
         except Exception as e:
             logger.error(f"Streaming error: {e}", exc_info=True)
@@ -102,3 +104,17 @@ async def health_check():
     except Exception as e:
         logger.error(f"Health check failed: {e}")
         raise HTTPException(status_code=500, detail="Health check failed")
+    
+@router.get("/test-stream")
+async def test_stream():
+    import asyncio
+    
+    async def generate():
+        for i in range(10):
+            yield f"data: {json.dumps({'count': i})}\n\n"
+            await asyncio.sleep(0.5)  # Simulate delay
+    
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream"
+    )

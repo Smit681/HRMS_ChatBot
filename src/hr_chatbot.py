@@ -18,7 +18,7 @@ from classification.query_classifier import QueryClassifier
 from pipelines.simple_pipeline import SimplePipeline
 from pipelines.aggregation_pipeline import AggregationPipeline
 from pipelines.ultra_complex_pipeline import UltraComplexPipeline
-from typing import Dict, Any, Iterator
+from typing import AsyncIterator, Dict, Any, Iterator
 import logging
 from datetime import datetime
 
@@ -161,11 +161,11 @@ class HRChatbot:
         
         return response
     
-    def ask_stream(
+    async def ask_stream(
     self,
     query: str,
     auto_confirm_ultra: bool = False
-) -> Iterator[dict]:
+) -> AsyncIterator[dict]:
         """
         Ask a question with streaming response
         
@@ -195,27 +195,27 @@ class HRChatbot:
         # Route to pipeline with streaming
         if query_type == 'ultra_complex':
             # Check if confirmed (in real app, handle this via frontend)
-            if not auto_confirm_ultra:
-                yield {
-                    'type': 'confirmation_required',
-                    'message': 'Ultra-complex query detected. Estimated time: ~2 minutes. Continue?',
-                    'query_type': query_type
-                }
-                # In frontend, wait for user confirmation, then call again with auto_confirm_ultra=True
-                return
+            # if not auto_confirm_ultra:
+            #     yield {
+            #         'type': 'confirmation_required',
+            #         'message': 'Ultra-complex query detected. Estimated time: ~2 minutes. Continue?',
+            #         'query_type': query_type
+            #     }
+            #     # In frontend, wait for user confirmation, then call again with auto_confirm_ultra=True
+            #     return
             
             # Stream ultra-complex pipeline
-            for chunk in self.ultra_complex_pipeline.process_stream(query):
+            async for chunk in self.ultra_complex_pipeline.process_stream(query):
                 yield chunk
         
         elif query_type == 'aggregation':
             # Stream aggregation pipeline
-            for chunk in self.aggregation_pipeline.process_stream(query):
+            async for chunk in self.aggregation_pipeline.process_stream(query):
                 yield chunk
         
         else:  # simple
             # Stream simple pipeline
-            for chunk in self.simple_pipeline.process_stream(query):
+            async for chunk in self.simple_pipeline.process_stream(query):
                 yield chunk
         
         # Final completion message

@@ -11,6 +11,7 @@ Flow:
 4. Return answer
 """
 
+import asyncio
 import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
@@ -19,7 +20,7 @@ from config import Config
 from retrieval.llm_interface import OllamaLLM
 from retrieval.context_builder import ContextBuilder
 from agents.mongodb_query_agent import MongoDBQueryAgent
-from typing import Dict, Any, Iterator
+from typing import AsyncIterator, Dict, Any, Iterator
 import json
 import logging
 
@@ -90,7 +91,7 @@ class AggregationPipeline:
         logger.info("✅ Query complete")
         return result
     
-    def process_stream(self, query: str) -> Iterator[dict]:
+    async def process_stream(self, query: str) -> AsyncIterator[dict]:
         """
         Process aggregation query with streaming
         
@@ -103,7 +104,9 @@ class AggregationPipeline:
         logger.info(f"[Aggregation Pipeline] Processing with streaming: {query}")
         
         # Step 1: Execute MongoDB query (not streamed)
-        yield {'type': 'status', 'message': 'Executing MongoDB query...'}
+        yield {'type': 'status', 'message': 'Executing the calculations...'}
+        logger.info("[1/3] Executing MongoDB query...")
+
         mongo_result = self.mongodb_agent.execute(query)
         
         if not mongo_result['success']:
@@ -111,12 +114,16 @@ class AggregationPipeline:
             return
         
         yield {'type': 'status', 'message': f"Result: {mongo_result['result']}"}
+        logger.info(f"MongoDB result: {mongo_result['result']}")
+
         
         # Step 2: Format result
         yield {'type': 'status', 'message': 'Formatting result...'}
         context = self._format_mongo_result(query, mongo_result)
         
         # Step 3: Generate natural language answer with streaming
+        logger.info("[3/3] Generating answer...")
+
         yield {'type': 'status', 'message': 'Generating answer...'}
         
         prompt = self.context_builder.build_prompt(
@@ -126,8 +133,10 @@ class AggregationPipeline:
         )
         
         # Stream tokens
-        for token in self.llm.generate_stream(prompt, temperature=0.2):
+        async for token in self.llm.generate_stream(prompt, temperature=0.2):
             yield {'type': 'token', 'content': token}
+            await asyncio.sleep(0)
+
         
         # Send metadata
         yield {
@@ -137,6 +146,7 @@ class AggregationPipeline:
             'result_type': mongo_result['result_type'],
             'pipeline': 'aggregation'
         }
+        logger.info("✅ Query complete")
     
     def _format_mongo_result(self, query: str, mongo_result: dict) -> str:
         """

@@ -8,7 +8,7 @@ Flow:
 1. Get ALL relevant employees from MongoDB (structured data)
 2. Split into batches of 10
 3. Process batches in parallel (each batch analyzed by LLM)
-4. Synthesize final answer
+4. Synthesize final answer with STREAMING
 5. Return comprehensive analysis
 
 Speed: 1-3 minutes (with user confirmation)
@@ -17,7 +17,8 @@ Usage:
     from src.pipelines.ultra_complex_pipeline import UltraComplexPipeline
     
     pipeline = UltraComplexPipeline()
-    result = pipeline.process("Predict raise candidates")
+    async for chunk in pipeline.process_stream("Predict raise candidates"):
+        print(chunk)
 """
 
 import sys
@@ -28,9 +29,11 @@ from config import Config
 from retrieval.context_builder import ContextBuilder
 from retrieval.llm_interface import OllamaLLM
 from pymongo import MongoClient
-from typing import Dict, Any, Iterator, List
+from typing import Dict, Any, AsyncIterator, List
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import logging
+import asyncio
+import time
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -52,97 +55,82 @@ class UltraComplexPipeline:
         
         logger.info("✅ Ultra-Complex Pipeline ready!")
     
-    def process(self, query: str) -> Dict[str, Any]:
-        """        
-        Args:
-            query: User's question
-        
-        Returns:
-            {
-                'answer': str,
-                'batch_results': List[str],
-                'total_analyzed': int,
-                'processing_time': float,
-                'pipeline': str
-            }
+    async def process_stream(self, query: str) -> AsyncIterator[dict]:
         """
-        import time
-        start_time = time.time()
-        
-        logger.info(f"[Ultra-Complex Pipeline] Processing: {query}")
-        
-        # Step 1: Fetch ALL relevant employees from MongoDB
-        logger.info("[1/4] Fetching employees from MongoDB...")
-        employees = self._fetch_employees()
-        
-        if not employees:
-            logger.warning("No employees found")
-            return self._no_results_response(query)
-        
-        logger.info(f"Fetched {len(employees)} employees")
-        
-        # Step 2: Split into batches
-        logger.info("[2/4] Creating batches...")
-        batches = self._create_batches(employees)
-        logger.info(f"Created {len(batches)} batches")
-        
-        # Step 3: Process batches in parallel
-        print(f"\n🔄 Processing {len(batches)} batches in parallel...")
-        batch_results = self._process_batches_parallel(query, batches)
-        
-        # Step 4: Synthesize final answer
-        print(f"\n🔄 Synthesizing final answer...")
-        final_answer = self._synthesize_results(query, batch_results, len(employees))
-        
-        processing_time = time.time() - start_time
-        
-        logger.info(f"✅ Processing complete in {processing_time:.1f}s")
-        
-        return {
-            'answer': final_answer,
-            'batch_results': batch_results,
-            'total_analyzed': len(employees),
-            'processing_time': processing_time,
-            'pipeline': 'ultra_complex'
-        }
-    
-    def process_stream(self, query: str) -> Iterator[dict]:
-        """
-        Process ultra-complex query with streaming
+        Process ultra-complex query with streaming synthesis
         
         Args:
             query: User's question
         
         Yields:
-            dict: Progress updates and token chunks
+            dict: Progress updates, token chunks, and metadata
         """
-        import time
         start_time = time.time()
         
         logger.info(f"[Ultra-Complex Pipeline] Processing with streaming: {query}")
         
-        # Step 1: Fetch employees
+        # Initial warning message
+        yield {
+            'type': 'status',
+            'message': '⚠️ Ultra-complex query detected. This will take 2-3 minutes to analyze all employees...'
+        }
+        await asyncio.sleep(0)
+        
+        # Step 1: Fetch employees from MongoDB
+        logger.info("[1/4] Fetching employees from MongoDB...")
         yield {'type': 'status', 'message': 'Fetching employees from MongoDB...'}
-        employees = self._fetch_employees()
+        
+        loop = asyncio.get_event_loop()
+        employees = await loop.run_in_executor(None, self._fetch_employees)
         
         if not employees:
-            yield {'type': 'error', 'message': 'No employees found'}
+            logger.warning("No employees found")
+            yield {'type': 'error', 'message': 'No employees found in database'}
             return
         
-        yield {'type': 'status', 'message': f'Fetched {len(employees)} employees'}
+        logger.info(f"✓ Fetched {len(employees)} employees")
+        yield {'type': 'status', 'message': f'✓ Fetched {len(employees)} employees from database'}
+        await asyncio.sleep(0)
         
         # Step 2: Create batches
-        yield {'type': 'status', 'message': 'Creating batches...'}
+        logger.info("[2/4] Creating batches...")
+        yield {'type': 'status', 'message': 'Creating batches of 10 employees each...'}
+        
         batches = self._create_batches(employees)
-        yield {'type': 'status', 'message': f'Created {len(batches)} batches'}
+        logger.info(f"✓ Created {len(batches)} batches")
+        yield {'type': 'status', 'message': f'✓ Created {len(batches)} batches for parallel processing'}
+        await asyncio.sleep(0)
         
-        # Step 3: Process batches (not streamed - too complex)
-        yield {'type': 'status', 'message': f'Processing {len(batches)} batches in parallel...'}
-        batch_results = self._process_batches_parallel(query, batches)
+        # Step 3: Process all batches (this takes the longest time)
+        logger.info(f"[3/4] Processing {len(batches)} batches in parallel...")
+        yield {
+            'type': 'status',
+            'message': f'Processing {len(batches)} batches in parallel (this will take 2-3 minutes)...'
+        }
+        await asyncio.sleep(0)
         
-        # Step 4: Synthesize with streaming
-        yield {'type': 'status', 'message': 'Synthesizing final answer...'}
+        # Run batch processing in thread pool to avoid blocking event loop
+        batch_results = await loop.run_in_executor(
+            None,
+            self._process_batches_parallel,
+            query,
+            batches
+        )
         
+        processing_time_so_far = time.time() - start_time
+        logger.info(f"✓ All batches processed in {processing_time_so_far:.1f}s")
+        yield {
+            'type': 'status',
+            'message': f'✓ All {len(batches)} batches processed successfully in {processing_time_so_far:.1f}s'
+        }
+        await asyncio.sleep(0)
+        
+        # Step 4: Synthesize final answer with STREAMING
+        logger.info("[4/4] Synthesizing final answer with streaming...")
+        yield {'type': 'status', 'message': 'Synthesizing final comprehensive answer...'}
+        await asyncio.sleep(0)
+        
+        # Build synthesis context
         context = self.context_builder.build_synthesis_context(
             query=query,
             batch_results=batch_results,
@@ -155,17 +143,21 @@ class UltraComplexPipeline:
             system_prompt=Config.SYSTEM_PROMPTS['synthesis']
         )
         
-        # Stream final answer
-        for token in self.llm.generate_stream(prompt, temperature=0.2):
+        # Stream the final answer token by token
+        logger.info("Streaming final answer...")
+        async for token in self.llm.generate_stream(prompt, temperature=0.2):
             yield {'type': 'token', 'content': token}
+            await asyncio.sleep(0)
         
-        # Send metadata
-        processing_time = time.time() - start_time
+        # Send final metadata
+        total_processing_time = time.time() - start_time
+        logger.info(f"✅ Ultra-complex query complete in {total_processing_time:.1f}s")
+        
         yield {
             'type': 'metadata',
             'total_analyzed': len(employees),
             'batch_results': len(batch_results),
-            'processing_time': processing_time,
+            'processing_time': total_processing_time,
             'pipeline': 'ultra_complex'
         }
     
@@ -176,12 +168,11 @@ class UltraComplexPipeline:
         For ultra-complex queries, we usually need ALL active employees,
         but can add filters based on query.
         
-        Args:
-            query: Original query
-        
         Returns:
             List of employee documents
-        """        
+        """
+        logger.info("Querying MongoDB for active employees...")
+        
         # Build filter based on query
         mongo_filter = {'isActive': True}  # Default: only active employees
         
@@ -193,10 +184,19 @@ class UltraComplexPipeline:
             if '_id' in emp:
                 emp['_id'] = str(emp['_id'])
         
+        logger.info(f"Retrieved {len(employees)} active employees")
         return employees
     
     def _create_batches(self, employees: List[Dict]) -> List[List[Dict]]:
-        """Split employees into batches"""
+        """
+        Split employees into batches of 10
+        
+        Args:
+            employees: List of employee documents
+        
+        Returns:
+            List of batches, where each batch contains up to 10 employees
+        """
         batch_size = Config.BATCH_SIZE
         batches = []
         
@@ -204,6 +204,7 @@ class UltraComplexPipeline:
             batch = employees[i:i + batch_size]
             batches.append(batch)
         
+        logger.info(f"Split {len(employees)} employees into {len(batches)} batches of {batch_size}")
         return batches
     
     def _process_batches_parallel(
@@ -211,9 +212,20 @@ class UltraComplexPipeline:
         query: str,
         batches: List[List[Dict]]
     ) -> List[str]:
-        """Process batches in parallel"""
+        """
+        Process batches in parallel using ThreadPoolExecutor
+        
+        Args:
+            query: User's question
+            batches: List of employee batches
+        
+        Returns:
+            List of batch analysis results (one per batch)
+        """
         batch_results = []
         max_workers = Config.MAX_PARALLEL_WORKERS
+        
+        logger.info(f"Starting parallel processing with {max_workers} workers...")
         
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             # Submit all batches
@@ -234,14 +246,17 @@ class UltraComplexPipeline:
                 try:
                     result = future.result()
                     batch_results.append((batch_num, result))
-                    print(f"✅ Batch {batch_num + 1}/{len(batches)} complete")
+                    logger.info(f"✓ Batch {batch_num + 1}/{len(batches)} complete")
                 except Exception as e:
-                    logger.error(f"Batch {batch_num + 1} failed: {e}")
-                    batch_results.append((batch_num, f"Error: {str(e)}"))
+                    logger.error(f"✗ Batch {batch_num + 1} failed: {e}")
+                    batch_results.append((batch_num, f"Error processing batch: {str(e)}"))
         
-        # Sort by batch number
+        # Sort by batch number to maintain order
         batch_results.sort(key=lambda x: x[0])
-        return [result for _, result in batch_results]
+        sorted_results = [result for _, result in batch_results]
+        
+        logger.info(f"✓ All {len(batches)} batches processed successfully")
+        return sorted_results
     
     def _process_single_batch(
         self,
@@ -250,8 +265,19 @@ class UltraComplexPipeline:
         batch_num: int,
         total_batches: int
     ) -> str:
-        """Process a single batch"""
-        logger.info(f"Processing batch {batch_num}/{total_batches}...")
+        """
+        Process a single batch of employees
+        
+        Args:
+            query: User's question
+            batch: List of employee documents (up to 10)
+            batch_num: Current batch number (1-indexed)
+            total_batches: Total number of batches
+        
+        Returns:
+            LLM analysis result for this batch
+        """
+        logger.info(f"Processing batch {batch_num}/{total_batches} ({len(batch)} employees)...")
         
         # Format batch data for LLM
         batch_context = self._format_batch_for_llm(query, batch, batch_num, total_batches)
@@ -265,9 +291,10 @@ class UltraComplexPipeline:
             )
         )
         
-        # Generate analysis
+        # Generate analysis (synchronous - we're already in a thread)
         result = self.llm.generate(prompt, temperature=0.3)
         
+        logger.info(f"✓ Batch {batch_num}/{total_batches} analysis complete")
         return result['text']
     
     def _format_batch_for_llm(
@@ -277,7 +304,18 @@ class UltraComplexPipeline:
         batch_num: int,
         total_batches: int
     ) -> str:
-        """Format batch of employees for LLM analysis"""
+        """
+        Format batch of employees for LLM analysis
+        
+        Args:
+            query: User's question
+            batch: List of employee documents
+            batch_num: Current batch number
+            total_batches: Total number of batches
+        
+        Returns:
+            Formatted context string for LLM
+        """
         context_parts = []
         
         context_parts.append(f"Batch {batch_num}/{total_batches} - Analyzing {len(batch)} employees")
@@ -308,31 +346,16 @@ class UltraComplexPipeline:
         
         return "\n".join(context_parts)
     
-    def _synthesize_results(
-        self,
-        query: str,
-        batch_results: List[str],
-        total_employees: int
-    ) -> str:
-        """Synthesize batch results into final answer"""
-        context = self.context_builder.build_synthesis_context(
-            query=query,
-            batch_results=batch_results,
-            total_employees=total_employees
-        )
-        
-        prompt = self.context_builder.build_prompt(
-            query=query,
-            context=context,
-            system_prompt=Config.SYSTEM_PROMPTS['synthesis']
-        )
-        
-        result = self.llm.generate(prompt, temperature=0.2)
-        
-        return result['text']
-    
     def _extract_focus_area(self, query: str) -> str:
-        """Extract what to focus on from query"""
+        """
+        Extract what to focus on from query
+        
+        Args:
+            query: User's question
+        
+        Returns:
+            Focus area for analysis
+        """
         query_lower = query.lower()
         
         if 'raise' in query_lower or 'promotion' in query_lower:
@@ -344,25 +367,17 @@ class UltraComplexPipeline:
         else:
             return "all relevant factors"
     
-    def _no_results_response(self, query: str) -> Dict[str, Any]:
-        """Handle no results"""
-        return {
-            'answer': f"I couldn't find employees to analyze for: '{query}'",
-            'batch_results': [],
-            'total_analyzed': 0,
-            'processing_time': 0,
-            'pipeline': 'ultra_complex'
-        }
-    
     def close(self):
         """Close MongoDB connection"""
+        logger.info("Closing MongoDB connection...")
         self.client.close()
+        logger.info("✓ MongoDB connection closed")
 
 
-def main():
-    """Test ultra-complex pipeline"""
+async def main():
+    """Test ultra-complex pipeline with streaming"""
     print("=" * 70)
-    print("ULTRA-COMPLEX PIPELINE - TESTING")
+    print("ULTRA-COMPLEX PIPELINE - STREAMING TEST")
     print("=" * 70)
     
     pipeline = UltraComplexPipeline()
@@ -371,28 +386,51 @@ def main():
     query = "Predict which employees are candidates for raises based on salary and tenure"
     
     print(f"\n❓ Query: {query}")
-    print(f"\n⚠️  This will take ~60-90 seconds (parallel processing)")
+    print(f"\n⚠️  This will take ~60-120 seconds with streaming output\n")
     
-    confirm = input("\nContinue? (yes/no): ").strip().lower()
+    print("=" * 70)
+    print("STREAMING OUTPUT:")
+    print("=" * 70)
     
-    if confirm in ['yes', 'y']:
-        result = pipeline.process(query)
-        
-        print(f"\n{'=' * 70}")
-        print("RESULTS")
-        print("=" * 70)
-        print(f"\n✅ Analyzed: {result['total_analyzed']} employees")
-        print(f"⏱️  Time: {result['processing_time']:.1f} seconds")
-        print(f"\n📝 Final Answer:")
-        print(result['answer'])
-    else:
-        print("\n❌ Cancelled")
+    full_answer = ""
     
-    pipeline.close()
+    try:
+        async for chunk in pipeline.process_stream(query):
+            chunk_type = chunk.get('type')
+            
+            if chunk_type == 'status':
+                print(f"\n📊 {chunk['message']}")
+            
+            elif chunk_type == 'token':
+                # Collect tokens for final answer
+                token = chunk['content']
+                full_answer += token
+                print(token, end='', flush=True)
+            
+            elif chunk_type == 'metadata':
+                print(f"\n\n{'=' * 70}")
+                print("METADATA:")
+                print(f"  • Total Analyzed: {chunk['total_analyzed']} employees")
+                print(f"  • Batch Results: {chunk['batch_results']} batches")
+                print(f"  • Processing Time: {chunk['processing_time']:.1f} seconds")
+                print(f"  • Pipeline: {chunk['pipeline']}")
+                print("=" * 70)
+            
+            elif chunk_type == 'error':
+                print(f"\n❌ Error: {chunk['message']}")
+    
+    except Exception as e:
+        print(f"\n❌ Exception occurred: {e}")
+        import traceback
+        traceback.print_exc()
+    
+    finally:
+        pipeline.close()
     
     print("\n" + "=" * 70)
     print("✅ Testing complete!")
 
 
 if __name__ == "__main__":
-    main()
+    # Run the async main function
+    asyncio.run(main())
