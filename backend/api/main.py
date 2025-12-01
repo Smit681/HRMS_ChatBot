@@ -4,7 +4,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 
-from .routes import router
+from .routes.chat_routes import router
+from .routes.auth_routes import router as auth_router 
+
 
 # Configure logging
 logging.basicConfig(
@@ -29,6 +31,7 @@ app.add_middleware(
 
 # Include routes
 app.include_router(router, prefix="/api", tags=["chat"])
+app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
 
 
 @app.get("/")

@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 from typing import Literal, Optional, List, Dict, Any
 from enum import Enum
 
+from .auth_schemas import UserRegister, UserLogin, Token, UserResponse
 
 class ChunkType(str, Enum):
     """Types of streaming chunks"""

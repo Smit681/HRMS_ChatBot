@@ -9,9 +9,9 @@ import json
 import logging
 
 # Add parent directory to path to import chatbot
-sys.path.append(str(Path(__file__).parent.parent.parent / "src"))
+sys.path.append(str(Path(__file__).parent.parent.parent.parent / "src"))
 
-from .schemas import ChatRequest, HealthResponse, StatusChunk
+from ..schemas import ChatRequest, HealthResponse, StatusChunk
 from hr_chatbot import HRChatbot
 
 logger = logging.getLogger(__name__)
@@ -85,6 +85,7 @@ async def chat_stream(request: ChatRequest):
         generate(),
         media_type="text/event-stream",
         headers={
+            
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
             "X-Accel-Buffering": "no"  # Disable nginx buffering

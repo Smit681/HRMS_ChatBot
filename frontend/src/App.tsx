@@ -3,7 +3,10 @@ import { ChatMessage } from './components/ChatMessage';
 import { ChatInput } from './components/ChatInput';
 import { StatusIndicator } from './components/StatusIndicator';
 import { ErrorDisplay } from './components/ErrorDisplay';
+import { LoginForm } from './components/LoginForm';
+import { RegisterForm } from './components/RegisterForm';
 import { chatService } from './services/chatService';
+import { authService } from './services/authService';
 import type { ChatChunk } from './types/chat';
 
 interface Message {
@@ -12,7 +15,13 @@ interface Message {
   metadata?: ChatChunk;
 }
 
+type AuthView = 'login' | 'register' | 'chat';
+
 function App() {
+  const [authView, setAuthView] = useState<AuthView>('login');
+  const [currentUser, setCurrentUser] = useState<{ email: string; full_name: string } | null>(null);
+  const [authError, setAuthError] = useState<string>('');
+  
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentAssistantMessage, setCurrentAssistantMessage] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
@@ -20,18 +29,71 @@ function App() {
   const [error, setError] = useState<{ message: string; details?: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Check authentication on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      if (authService.isAuthenticated()) {
+        try {
+          const user = await authService.getCurrentUser();
+          setCurrentUser(user);
+          setAuthView('chat');
+        } catch {
+          authService.logout();
+          setAuthView('login');
+        }
+      }
+    };
+    checkAuth();
+  }, []);
+
   // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, currentAssistantMessage]);
 
+  // Auth handlers
+  const handleLogin = async (email: string, password: string) => {
+    try {
+      setAuthError('');
+      await authService.login({ email, password });
+      const user = await authService.getCurrentUser();
+      setCurrentUser(user);
+      setAuthView('chat');
+    } catch (err) {
+      setAuthError(err instanceof Error ? err.message : 'Login failed');
+      throw err;
+    }
+  };
+
+  const handleRegister = async (email: string, password: string, full_name: string) => {
+    try {
+      setAuthError('');
+      await authService.register({ email, password, full_name });
+      // Auto-login after registration
+      await authService.login({ email, password });
+      const user = await authService.getCurrentUser();
+      setCurrentUser(user);
+      setAuthView('chat');
+    } catch (err) {
+      setAuthError(err instanceof Error ? err.message : 'Registration failed');
+      throw err;
+    }
+  };
+
+  const handleLogout = () => {
+    authService.logout();
+    setCurrentUser(null);
+    setMessages([]);
+    setAuthView('login');
+  };
+
+  // Chat handler
   const handleSendMessage = async (userMessage: string) => {
     setError(null);
     setIsStreaming(true);
     setStatusMessage('');
     setCurrentAssistantMessage('');
 
-    // Add user message
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
 
     try {
@@ -73,7 +135,6 @@ function App() {
 
           case 'confirmation_required':
             setStatusMessage(chunk.message);
-            // TODO: Handle user confirmation for ultra-complex queries
             break;
         }
       }
@@ -88,12 +149,53 @@ function App() {
     }
   };
 
+  // Render authentication views
+  if (authView === 'login') {
+    return (
+      <LoginForm
+        onLogin={handleLogin}
+        onSwitchToRegister={() => {
+          setAuthError('');
+          setAuthView('register');
+        }}
+        error={authError}
+      />
+    );
+  }
+
+  if (authView === 'register') {
+    return (
+      <RegisterForm
+        onRegister={handleRegister}
+        onSwitchToLogin={() => {
+          setAuthError('');
+          setAuthView('login');
+        }}
+        error={authError}
+      />
+    );
+  }
+
+  // Render chat interface (authenticated)
   return (
     <div className="min-h-screen bg-gray-950 text-white flex flex-col">
       {/* Header */}
-      <header className="bg-gray-900 border-b border-gray-800 p-4">
-        <h1 className="text-2xl font-bold">HR Chatbot</h1>
-        <p className="text-sm text-gray-400">Ask about employees, benefits, and policies</p>
+      <header className="bg-gray-900 border-b border-gray-800 p-4 flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold">HR Chatbot</h1>
+          <p className="text-sm text-gray-400">Ask about employees, benefits, and policies</p>
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-gray-400">
+            Welcome, {currentUser?.full_name}
+          </span>
+          <button
+            onClick={handleLogout}
+            className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+          >
+            Logout
+          </button>
+        </div>
       </header>
 
       {/* Messages */}

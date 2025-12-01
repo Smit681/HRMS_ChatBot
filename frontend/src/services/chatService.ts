@@ -1,14 +1,18 @@
 import type { ChatChunk, ChatRequest } from '../types/chat';
+import { authService } from './authService';  // Add this import
 
 const API_BASE_URL = 'http://localhost:8000/api';
 
 export class ChatService {
   async *streamChat(request: ChatRequest): AsyncGenerator<ChatChunk, void, unknown> {
     try {
+      const token = authService.getToken();  // Add this
+      
       const response = await fetch(`${API_BASE_URL}/chat/stream`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }),  // Add this
         },
         body: JSON.stringify({
           query: request.query,
@@ -16,6 +20,7 @@ export class ChatService {
         }),
       });
 
+      // ... rest of the code stays the same
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
