@@ -164,6 +164,13 @@ class MongoDBQueryAgent:
             # Aggregation pipeline
             pipeline = mongodb_op.get('pipeline', [])
             results = list(self.collection.aggregate(pipeline))
+
+            # Convert ObjectId to string for ALL results
+            for doc in results:
+                if '_id' in doc:
+                    # Handle both ObjectId and dict _id
+                    if hasattr(doc['_id'], '__str__'):
+                        doc['_id'] = str(doc['_id'])
             
             return {
                 'type': 'aggregate',

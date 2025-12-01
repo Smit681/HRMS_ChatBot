@@ -25,7 +25,7 @@ torchvision
 
 # API and Web Framework (for future phases)
 fastapi
-uvicorn
+uvicorn[standard]
 pydantic
 
 # Frontend (for future phases)
@@ -37,3 +37,4 @@ pytest-asyncio
 
 # Utilities
 python-dateutil
+python-multipart

@@ -39,16 +39,6 @@ class Config:
         "employment_agreements",
         "faq"
     ]
-    
-    # QUERY COMPLEXITY DETECTION 
-
-    # Ultra-complex queries - require batch processing
-    ULTRA_COMPLEX_INDICATORS = [
-        'predict', 'forecast', 'analyze all', 'recommend', 'suggest',
-        'optimize', 'best candidates', 'identify trends', 'patterns',
-        'correlations', 'risk assessment', 'eligibility analysis',
-        'compare all', 'rank all', 'prioritize', 'strategic', 'estimate', 'guess'
-    ]
 
     # BATCH PROCESSING
     BATCH_SIZE = 10              # Employees per batch for ultra-complex
