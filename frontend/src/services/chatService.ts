@@ -70,6 +70,22 @@ export class ChatService {
     }
     return response.json();
   }
+
+  async getHistory(limit: number = 50): Promise<{ history: any[]; count: number; user: string }> {
+    const token = authService.getToken();
+    
+    const response = await fetch(`${API_BASE_URL}/chat/history?limit=${limit}`, {
+      headers: {
+        ...(token && { 'Authorization': `Bearer ${token}` }),
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to load chat history');
+    }
+
+    return response.json();
+  }
 }
 
 export const chatService = new ChatService();

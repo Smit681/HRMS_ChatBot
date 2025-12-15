@@ -17,15 +17,21 @@ export function ChatInput({ onSubmit, disabled }: ChatInputProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="border-t border-gray-800 p-4">
+    <form onSubmit={handleSubmit} className="mb-4 sticky w-[60vw] bottom-4 mx-auto border-t border-black">
       <div className="flex gap-2">
-        <input
-          type="text"
+        <textarea
+          rows={2}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask about employees, benefits, policies..."
           disabled={disabled}
-          className="flex-1 bg-gray-800 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 bg-gray-800 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed resize-none"
+          onKeyDown={(e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          handleSubmit(e);
+        }
+      }}
         />
         <button
           type="submit"

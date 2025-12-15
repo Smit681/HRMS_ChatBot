@@ -143,7 +143,53 @@ class ProductionETL:
         
         print(f"✅ Processed {len(nodes)} employees")
         return nodes
-    
+
+    def process_faq(self) -> List[TextNode]:
+        """Load and process FAQ records - special handling for question variants"""
+        print("\nProcessing FAQ...")
+        
+        file_path = Config.RAW_DATA_DIR / "HRWIKI.Possible Questions Summary.json"
+        with open(file_path, 'r', encoding='utf-8') as f:
+            faqs = json.load(f)
+        
+        nodes = []
+        for idx, faq in enumerate(tqdm(faqs, desc="FAQ entries")):
+            # Extract fields
+            fields = faq.get('fields', '')
+            summary = faq.get('summary', '')
+            question_variants = faq.get('question_variants', [])
+            
+            # Create rich searchable text combining all information
+            searchable_text = f"""
+                FAQ Entry - {fields}
+
+                Summary: {self.clean_text(summary)}
+
+                Common Question Variations:
+                {chr(10).join(f"- {q}" for q in question_variants)}
+
+                Answer: {self.clean_text(summary)}
+            """.strip()
+            
+            # Create metadata
+            metadata = {
+                'type': 'faq',
+                'fields': fields,
+                'num_variants': len(question_variants),
+                'source_file': 'HRWIKI.Possible Questions Summary.json'
+            }
+            
+            # Create node
+            node = TextNode(
+                text=searchable_text,
+                id_=f"faq_{idx}",
+                metadata=metadata
+            )
+            nodes.append(node)
+        
+        print(f"✅ Processed {len(nodes)} FAQ entries")
+        return nodes
+        
     def process_documents(self, file_path: Path, doc_type: str, 
                          plan_name: str) -> List[TextNode]:
         """Load and chunk documents intelligently"""
@@ -237,6 +283,10 @@ class ProductionETL:
         # Process employees
         employee_nodes = self.process_employees()
         self.add_to_chromadb("employees", employee_nodes)
+
+        # Process FAQ
+        faq_nodes = self.process_faq()
+        self.add_to_chromadb("faq", faq_nodes)
         
         # Define documents to process
         documents_config = [
@@ -247,7 +297,6 @@ class ProductionETL:
             ("HRWIKI.Itlize Global LLC - DELTA Buy-Up Plan - PPO Plus Premier - Non Par MAC Benefit Summary.json", "dental", "buyup"),
             ("HRWIKI.Delta Vision Benefit Summary.json", "vision", "standard"),
             ("HRWIKI.EmploymentAgreement.json", "employment", "standard"),
-            ("HRWIKI.Possible Questions Summary.json", "faq", "common")
         ]
         
         # Map doc types to collections

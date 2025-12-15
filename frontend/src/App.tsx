@@ -8,6 +8,7 @@ import { RegisterForm } from './components/RegisterForm';
 import { chatService } from './services/chatService';
 import { authService } from './services/authService';
 import type { ChatChunk } from './types/chat';
+import { ChatHistory } from './components/ChatHistory';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -28,6 +29,7 @@ function App() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<{ message: string; details?: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [showHistory, setShowHistory] = useState(false);
 
   // Check authentication on mount
   useEffect(() => {
@@ -180,12 +182,19 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-950 text-white flex flex-col">
       {/* Header */}
-      <header className="bg-gray-900 border-b border-gray-800 p-4 flex justify-between items-center">
+      <header className="sticky top-0 bg-gray-900 border-b border-gray-800 p-4 flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold">HR Chatbot</h1>
           <p className="text-sm text-gray-400">Ask about employees, benefits, and policies</p>
         </div>
         <div className="flex items-center gap-4">
+          <button
+              onClick={() => setShowHistory(!showHistory)}
+              className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm transition-colors flex items-center gap-2"
+            >
+              <span>📜</span>
+              <span>Chat History</span>
+            </button>
           <span className="text-sm text-gray-400">
             Welcome, {currentUser?.full_name}
           </span>
@@ -197,6 +206,19 @@ function App() {
           </button>
         </div>
       </header>
+
+      {showHistory && (
+        <ChatHistory
+          onClose={() => setShowHistory(false)}
+          onLoadMessage={(query, response) => {
+            setMessages([
+              { role: 'user', content: query },
+              { role: 'assistant', content: response }
+            ]);
+            setShowHistory(false);
+          }}
+        />
+      )}
 
       {/* Messages */}
       <main className="flex-1 overflow-y-auto p-4">
