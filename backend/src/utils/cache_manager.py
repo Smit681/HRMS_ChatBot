@@ -1,20 +1,20 @@
 """
-Hybrid Cache Manager for HR Chatbot
-====================================
+Hybrid Cache Manager for HR Chatbot - ROBUST VERSION
+====================================================
 
-Two-tier caching system:
+Two-tier caching system with STRICT validation:
 1. Exact Match Cache: Hash-based (instant O(1) lookup)
-2. Semantic Cache: Embedding similarity (slower but catches paraphrases)
+2. Semantic Cache: Embedding similarity with keyword validation
 
 Flow:
 - Check exact match → HIT: return
-- Check semantic similarity → HIT (>0.85): return
+- Check semantic similarity (>0.92) → Validate keywords → HIT: return
 - MISS: process query, cache with both methods
 
-Cache Strategy:
-- Exact: SHA256 hash key
-- Semantic: Store query embeddings in Redis with vector similarity search
-- TTL: 1 hour (simple/aggregation), 24 hours (ultra-complex)
+CRITICAL IMPROVEMENTS:
+- High similarity threshold (0.92) to avoid false matches
+- Keyword extraction and validation (numbers, IDs, plan names, etc.)
+- Context-aware matching (employee IDs, visa types, positions must match)
 """
 
 import redis
@@ -22,7 +22,8 @@ import hashlib
 import json
 import logging
 import numpy as np
-from typing import Optional, Dict, Any, List, Tuple
+import re
+from typing import Optional, Dict, Any, List, Tuple, Set
 from datetime import datetime
 import sys
 from pathlib import Path
@@ -39,16 +40,33 @@ logger = logging.getLogger(__name__)
 
 class HybridCacheManager:
     """
-    Hybrid caching: Exact match + Semantic similarity
+    Hybrid caching: Exact match + Semantic similarity with keyword validation
     """
     
     # Semantic cache settings
-    SEMANTIC_THRESHOLD = 0.50  # Cosine similarity threshold (0-1)
+    SEMANTIC_THRESHOLD = 0.90  # STRICT threshold - only very similar queries match
     MAX_SEMANTIC_CANDIDATES = 100  # Max cached queries to check
+    
+    # Critical keyword patterns that MUST match for cache hit
+    CRITICAL_PATTERNS = {
+        'employee_ids': r'\b\d{4}\b',  # Employee IDs (4 digits like 1503, 1528)
+        'numbers': r'\$?\d+(?:,\d{3})*(?:\.\d{2})?',  # Numbers and currencies
+        'years': r'\b20\d{2}\b',  # Years (2020-2099)
+    }
+    
+    # Critical keywords (case-insensitive)
+    CRITICAL_KEYWORDS = {
+        'plan_names': ['ppo 1000', 'ppo 2500', 'buy-up', 'plan 1', 'plan 2'],
+        'insurance_types': ['dental', 'vision', 'medical', 'health'],
+        'visa_types': ['h-1b', 'h1b', 'opt', 'cpt', 'green card', 'citizen', 'tn visa', 'opt-extension'],
+        'positions': ['software developer', 'technical project manager', 'test analyst', 
+                     'quality assurance', 'sales executive', 'project manager'],
+        'employment_types': ['fulltime', 'full-time', 'parttime', 'part-time', 'contractor']
+    }
     
     def __init__(self, enable_semantic: bool = True):
         """
-        Initialize hybrid cache manager
+        Initialize hybrid cache manager with strict validation
         
         Args:
             enable_semantic: Enable semantic caching (default: True)
@@ -95,6 +113,87 @@ class HybridCacheManager:
         """Normalize query for consistent caching"""
         return ' '.join(query.lower().strip().split())
     
+    def _extract_critical_info(self, query: str) -> Dict[str, Set[str]]:
+        """
+        Extract critical information that must match for valid cache hit
+        
+        Returns:
+            {
+                'employee_ids': {1503, 1528, ...},
+                'numbers': {100, 2500, ...},
+                'years': {2024, 2025, ...},
+                'plan_names': {'ppo 1000', ...},
+                'insurance_types': {'dental', ...},
+                'visa_types': {'h-1b', ...},
+                'positions': {'software developer', ...}
+            }
+        """
+        query_lower = query.lower()
+        critical_info = {}
+        
+        # Extract patterns (IDs, numbers, years)
+        for key, pattern in self.CRITICAL_PATTERNS.items():
+            matches = set(re.findall(pattern, query_lower))
+            if matches:
+                critical_info[key] = matches
+        
+        # Extract keyword categories
+        for category, keywords in self.CRITICAL_KEYWORDS.items():
+            found = set()
+            for keyword in keywords:
+                if keyword in query_lower:
+                    found.add(keyword)
+            if found:
+                critical_info[category] = found
+        
+        return critical_info
+    
+    def _validate_keyword_match(
+        self,
+        query1_info: Dict[str, Set[str]],
+        query2_info: Dict[str, Set[str]]
+    ) -> Tuple[bool, str]:
+        """
+        Validate that critical keywords match between two queries
+        
+        Args:
+            query1_info: Critical info from query 1
+            query2_info: Critical info from query 2
+        
+        Returns:
+            (is_valid, reason) - True if queries are compatible
+        """
+        # Check each critical category
+        for category in query1_info.keys():
+            if category in query2_info:
+                # Both queries have this category - must have overlap
+                overlap = query1_info[category] & query2_info[category]
+                
+                if not overlap:
+                    # CRITICAL MISMATCH - different values for same category
+                    reason = f"Mismatch in {category}: {query1_info[category]} vs {query2_info[category]}"
+                    return False, reason
+        
+        # Check for one-sided critical categories (only in one query)
+        all_categories = set(query1_info.keys()) | set(query2_info.keys())
+        
+        for category in all_categories:
+            # Employee IDs are CRITICAL - must match if present in either query
+            if category == 'employee_ids':
+                if category in query1_info and category not in query2_info:
+                    return False, f"Query 1 has employee ID, Query 2 doesn't"
+                if category not in query1_info and category in query2_info:
+                    return False, f"Query 2 has employee ID, Query 1 doesn't"
+            
+            # Plan names are CRITICAL - must match if present
+            if category == 'plan_names':
+                if category in query1_info and category not in query2_info:
+                    return False, f"Query 1 has plan name, Query 2 doesn't"
+                if category not in query1_info and category in query2_info:
+                    return False, f"Query 2 has plan name, Query 1 doesn't"
+        
+        return True, "Keywords match"
+    
     def _generate_exact_key(self, query: str, query_type: str = None) -> str:
         """Generate exact match cache key (hash-based)"""
         normalized_query = self._normalize_query(query)
@@ -107,7 +206,6 @@ class HybridCacheManager:
     
     def _generate_semantic_key(self, query: str, query_type: str = None) -> str:
         """Generate semantic cache metadata key"""
-        # Use same hash for linking exact <-> semantic
         exact_key = self._generate_exact_key(query, query_type)
         return f"chatbot:semantic:{exact_key.split(':')[-1]}"
     
@@ -150,7 +248,7 @@ class HybridCacheManager:
     
     def get(self, query: str, query_type: str = None) -> Optional[Dict[str, Any]]:
         """
-        Retrieve cached result (exact match first, then semantic)
+        Retrieve cached result with STRICT validation
         
         Args:
             query: User query
@@ -168,12 +266,13 @@ class HybridCacheManager:
             logger.info(f"✅ EXACT CACHE HIT: {query[:50]}...")
             return exact_result
         
-        # Step 2: Try semantic match (slower, but catches paraphrases)
+        # Step 2: Try semantic match with STRICT validation
         if self.enable_semantic:
             semantic_result = self._get_semantic(query, query_type)
             if semantic_result:
                 logger.info(f"✅ SEMANTIC CACHE HIT: {query[:50]}...")
                 logger.info(f"   Matched: {semantic_result.get('original_query', 'N/A')[:50]}...")
+                logger.info(f"   Similarity: {semantic_result.get('similarity_score', 0):.3f}")
                 return semantic_result
         
         logger.info(f"❌ Cache MISS: {query[:50]}...")
@@ -199,13 +298,16 @@ class HybridCacheManager:
     
     def _get_semantic(self, query: str, query_type: str = None) -> Optional[Dict[str, Any]]:
         """
-        Try semantic similarity match
+        Try semantic similarity match with STRICT keyword validation
         
         Process:
         1. Generate query embedding
-        2. Get all semantic cache keys for this query_type
-        3. Calculate similarity with each
-        4. Return best match if > threshold
+        2. Extract critical keywords from query
+        3. Get all semantic cache keys
+        4. For each cached query:
+           a. Check similarity (must be > 0.92)
+           b. Validate keywords match
+        5. Return best valid match
         """
         try:
             # Generate query embedding
@@ -214,8 +316,12 @@ class HybridCacheManager:
                 logger.debug("Failed to generate query embedding")
                 return None
             
+            # Extract critical keywords from query
+            query_critical_info = self._extract_critical_info(query)
+            logger.debug(f"Query critical info: {query_critical_info}")
+            
             # Get all semantic cache keys
-            pattern = b"chatbot:semantic:*"  # Use bytes pattern
+            pattern = b"chatbot:semantic:*"
             semantic_keys = self.redis_client.keys(pattern)
             
             if not semantic_keys:
@@ -224,7 +330,7 @@ class HybridCacheManager:
             
             logger.debug(f"Found {len(semantic_keys)} semantic cache entries to check")
             
-            # Limit candidates to avoid slow searches
+            # Limit candidates
             if len(semantic_keys) > self.MAX_SEMANTIC_CANDIDATES:
                 import random
                 semantic_keys = random.sample(semantic_keys, self.MAX_SEMANTIC_CANDIDATES)
@@ -244,19 +350,37 @@ class HybridCacheManager:
                     # Parse metadata
                     sem_meta = json.loads(sem_data.decode('utf-8'))
                     
-                    # Check if query_type matches (if specified)
+                    # Check if query_type matches
                     if query_type and sem_meta.get('query_type') != query_type:
                         continue
                     
-                    # Get cached embedding - FIX: properly decode from base64
+                    # Get cached query text
+                    cached_query = sem_meta.get('query', '')
+                    
+                    # Calculate similarity
                     import base64
                     embedding_bytes = base64.b64decode(sem_meta['embedding'])
                     cached_embedding = np.frombuffer(embedding_bytes, dtype=np.float32)
-                    
-                    # Calculate similarity
                     similarity = self._cosine_similarity(query_embedding, cached_embedding)
                     
-                    logger.debug(f"Similarity with '{sem_meta.get('query', 'N/A')[:30]}...': {similarity:.3f}")
+                    # STRICT THRESHOLD - only proceed if very similar
+                    if similarity < self.SEMANTIC_THRESHOLD:
+                        continue
+                    
+                    logger.debug(f"High similarity ({similarity:.3f}) with: {cached_query[:50]}...")
+                    
+                    # KEYWORD VALIDATION - critical keywords must match
+                    cached_critical_info = self._extract_critical_info(cached_query)
+                    is_valid, reason = self._validate_keyword_match(
+                        query_critical_info,
+                        cached_critical_info
+                    )
+                    
+                    if not is_valid:
+                        logger.debug(f"REJECTED: {reason}")
+                        continue
+                    
+                    logger.debug(f"VALIDATED: Keywords match")
                     
                     # Track best match
                     if similarity > best_similarity:
@@ -265,16 +389,16 @@ class HybridCacheManager:
                             'semantic_key': sem_key,
                             'exact_key': sem_meta['exact_key'].encode('utf-8') if isinstance(sem_meta['exact_key'], str) else sem_meta['exact_key'],
                             'similarity': similarity,
-                            'original_query': sem_meta.get('query', 'N/A')
+                            'original_query': cached_query
                         }
                 
                 except Exception as e:
                     logger.debug(f"Error checking semantic key: {e}")
                     continue
             
-            # Check if best match meets threshold
-            if best_match and best_similarity >= self.SEMANTIC_THRESHOLD:
-                logger.debug(f"Best match: {best_match['original_query'][:50]}... (similarity: {best_similarity:.3f})")
+            # Return best validated match
+            if best_match:
+                logger.debug(f"Best validated match: {best_match['original_query'][:50]}... (similarity: {best_similarity:.3f})")
                 
                 # Retrieve the actual cached result
                 cached_result = self.redis_client.get(best_match['exact_key'])
@@ -286,7 +410,7 @@ class HybridCacheManager:
                     result['original_query'] = best_match['original_query']
                     return result
             else:
-                logger.debug(f"No match above threshold (best: {best_similarity:.3f}, threshold: {self.SEMANTIC_THRESHOLD})")
+                logger.debug(f"No validated match found (threshold: {self.SEMANTIC_THRESHOLD})")
             
             return None
             
@@ -341,14 +465,12 @@ class HybridCacheManager:
             )
             
             # 2. Store semantic metadata (if enabled)
-            # 2. Store semantic metadata (if enabled)
             if self.enable_semantic:
                 query_embedding = self._get_query_embedding(query)
                 if query_embedding is not None:
                     semantic_key = self._generate_semantic_key(query, query_type)
                     
                     # Store embedding + link to exact cache
-                    # FIX: encode embedding as base64 string for JSON compatibility
                     import base64
                     embedding_bytes = query_embedding.astype(np.float32).tobytes()
                     embedding_b64 = base64.b64encode(embedding_bytes).decode('utf-8')
@@ -357,7 +479,7 @@ class HybridCacheManager:
                         'query': query,
                         'query_type': query_type,
                         'exact_key': exact_key,
-                        'embedding': embedding_b64  # Store as base64 string
+                        'embedding': embedding_b64
                     }
                     
                     semantic_json = json.dumps(semantic_meta).encode('utf-8')
@@ -369,12 +491,12 @@ class HybridCacheManager:
                     )
                     
                     logger.debug(f"Stored semantic cache with embedding dim: {len(query_embedding)}")
+            
             return True
             
         except Exception as e:
             logger.error(f"Failed to cache result: {e}")
             return False
-    
     
     def invalidate(self, query: str, query_type: str = None) -> bool:
         """Invalidate both exact and semantic cache"""
@@ -421,7 +543,8 @@ class HybridCacheManager:
                 'total_semantic': 0,
                 'memory_used': '0B',
                 'connected': False,
-                'semantic_enabled': False
+                'semantic_enabled': False,
+                'semantic_threshold': self.SEMANTIC_THRESHOLD
             }
         
         try:
@@ -434,10 +557,11 @@ class HybridCacheManager:
             return {
                 'total_exact': len(exact_keys),
                 'total_semantic': len(semantic_keys),
-                'total_cached_queries': len(exact_keys),  # Exact = actual queries
+                'total_cached_queries': len(exact_keys),
                 'memory_used': memory_used,
                 'connected': True,
-                'semantic_enabled': self.enable_semantic
+                'semantic_enabled': self.enable_semantic,
+                'semantic_threshold': self.SEMANTIC_THRESHOLD
             }
         except Exception as e:
             logger.error(f"Failed to get stats: {e}")
@@ -446,7 +570,8 @@ class HybridCacheManager:
                 'total_semantic': 0,
                 'memory_used': '0B',
                 'connected': False,
-                'semantic_enabled': False
+                'semantic_enabled': False,
+                'semantic_threshold': self.SEMANTIC_THRESHOLD
             }
     
     def close(self):
@@ -473,75 +598,122 @@ def get_cache_manager() -> HybridCacheManager:
 
 
 def main():
-    """Test hybrid cache manager"""
+    """Test hybrid cache manager with STRICT validation"""
     print("=" * 70)
-    print("HYBRID CACHE MANAGER - TESTING")
+    print("HYBRID CACHE MANAGER - ROBUST TESTING")
     print("=" * 70)
     
     logging.basicConfig(
-        level=logging.INFO,
+        level=logging.DEBUG,  # DEBUG to see validation details
         format='%(asctime)s - %(levelname)s - %(message)s'
     )
     
     cache = HybridCacheManager(enable_semantic=True)
     
-    # Test 1: Stats
-    print("\n--- Test 1: Initial Stats ---")
-    stats = cache.get_stats()
-    print(f"Connected: {stats['connected']}")
-    print(f"Semantic enabled: {stats['semantic_enabled']}")
-    print(f"Cached queries: {stats['total_cached_queries']}")
-    print(f"Memory: {stats['memory_used']}")
+    # Clear cache first
+    print("\n🗑️  Clearing existing cache...")
+    cache.clear_all()
     
-    # Test 2: Cache MISS
-    print("\n--- Test 2: Cache MISS ---")
-    query1 = "How many employees have H-1B visas?"
-    result = cache.get(query1, query_type="aggregation")
-    print(f"Result: {result}")
+    # Test cases that should NOT match
+    print("\n" + "=" * 70)
+    print("TEST 1: Different Employee IDs (should NOT match)")
+    print("=" * 70)
     
-    # Test 3: Cache SET
-    print("\n--- Test 3: Cache SET ---")
-    success = cache.set(
-        query=query1,
+    # Cache employee 1504
+    cache.set(
+        query="Tell me about employee with id 1504",
+        answer="Employee 1504 is a Technical Project Manager.",
+        metadata={'confidence': 0.95},
+        query_type="simple"
+    )
+    
+    # Try to get employee 1528 (should MISS)
+    result = cache.get("Tell me about employee with id 1528", query_type="simple")
+    if result:
+        print(f"❌ FALSE MATCH: {result['original_query']}")
+    else:
+        print(f"✅ CORRECT MISS: Different employee IDs rejected")
+    
+    # Test cases that should NOT match
+    print("\n" + "=" * 70)
+    print("TEST 2: Different Insurance Types (should NOT match)")
+    print("=" * 70)
+    
+    # Cache dental question
+    cache.set(
+        query="What is the dental insurance copay?",
+        answer="Dental insurance has $50 deductible.",
+        metadata={'confidence': 0.95},
+        query_type="simple"
+    )
+    
+    # Try insurance plans question (should MISS)
+    result = cache.get("What are the insurance plans for this company?", query_type="simple")
+    if result:
+        print(f"❌ FALSE MATCH: {result['original_query']}")
+    else:
+        print(f"✅ CORRECT MISS: Different topics rejected")
+    
+    # Test cases that SHOULD match
+    print("\n" + "=" * 70)
+    print("TEST 3: Valid Paraphrases (should match)")
+    print("=" * 70)
+    
+    # Cache H-1B question
+    cache.set(
+        query="How many employees have H-1B visas?",
         answer="There are 26 employees with H-1B visas.",
-        metadata={'num_sources': 26, 'confidence': 0.95},
+        metadata={'confidence': 0.95},
         query_type="aggregation"
     )
-    print(f"Cached: {success}")
     
-    # Test 4: Exact match HIT
-    print("\n--- Test 4: Exact Match HIT ---")
-    result = cache.get(query1, query_type="aggregation")
-    print(f"Cache type: {result['cache_type']}")
-    print(f"Answer: {result['answer'][:50]}...")
+    # Try paraphrase (should HIT)
+    paraphrases = [
+        "Count of employees with H1B visa",
+        "How many workers have H-1B status?",
+        "Total H-1B visa holders"
+    ]
     
-    # Test 5: Semantic match HIT (paraphrase)
-    print("\n--- Test 5: Semantic Match HIT (paraphrase) ---")
-    query2 = "Count of employees with H1B visa"  # Different wording
-    result = cache.get(query2, query_type="aggregation")
+    for para in paraphrases:
+        result = cache.get(para, query_type="aggregation")
+        if result:
+            print(f"✅ VALID MATCH: {para}")
+            print(f"   Original: {result['original_query']}")
+            print(f"   Similarity: {result.get('similarity_score', 0):.3f}")
+        else:
+            print(f"⚠️  MISS: {para}")
+    
+    # Test different plan names
+    print("\n" + "=" * 70)
+    print("TEST 4: Different Plan Names (should NOT match)")
+    print("=" * 70)
+    
+    # Cache PPO 1000 question
+    cache.set(
+        query="What is the copay for PPO 1000 plan?",
+        answer="PPO 1000 has $35 copay for primary care.",
+        metadata={'confidence': 0.95},
+        query_type="simple"
+    )
+    
+    # Try PPO 2500 (should MISS)
+    result = cache.get("What is the copay for PPO 2500 plan?", query_type="simple")
     if result:
-        print(f"Cache type: {result['cache_type']}")
-        print(f"Similarity: {result.get('similarity_score', 0):.3f}")
-        print(f"Original query: {result.get('original_query', 'N/A')[:50]}...")
-        print(f"Answer: {result['answer'][:50]}...")
+        print(f"❌ FALSE MATCH: {result['original_query']}")
     else:
-        print("No semantic match (threshold too high or embeddings too different)")
+        print(f"✅ CORRECT MISS: Different plan names rejected")
     
-    # Test 6: Completely different query (MISS)
-    print("\n--- Test 6: Different Query (MISS) ---")
-    query3 = "What is the dental insurance copay?"
-    result = cache.get(query3, query_type="simple")
-    print(f"Result: {result}")
-    
-    # Test 7: Final stats
-    print("\n--- Test 7: Final Stats ---")
+    # Final stats
+    print("\n" + "=" * 70)
+    print("CACHE STATISTICS")
+    print("=" * 70)
     stats = cache.get_stats()
-    print(f"Exact cache entries: {stats['total_exact']}")
-    print(f"Semantic cache entries: {stats['total_semantic']}")
-    print(f"Total cached queries: {stats['total_cached_queries']}")
+    print(f"Cached queries: {stats['total_cached_queries']}")
+    print(f"Semantic threshold: {stats['semantic_threshold']}")
+    print(f"Memory used: {stats['memory_used']}")
     
     print("\n" + "=" * 70)
-    print("✅ Hybrid Cache Testing Complete!")
+    print("✅ Robust Cache Testing Complete!")
     print("=" * 70)
 
 
