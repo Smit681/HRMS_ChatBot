@@ -15,17 +15,21 @@ Speed: 2-3 seconds
 import asyncio
 import sys
 from pathlib import Path
+# Add BOTH paths at the very top
 sys.path.append(str(Path(__file__).parent.parent))
+
 
 from config import Config
 from retrieval.retrieval_engine import RetrievalEngine
 from retrieval.context_builder import ContextBuilder
 from retrieval.llm_interface import OllamaLLM
-from typing import AsyncIterator, Dict, Any, Iterator
+from typing import AsyncIterator, Dict, Any
+
 import logging
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 
 class SimplePipeline:
@@ -37,6 +41,11 @@ class SimplePipeline:
         self.retrieval_engine = RetrievalEngine()
         self.context_builder = ContextBuilder()
         self.llm = OllamaLLM()
+
+        # Initialize cache 
+        logger.info("Initializing cache manager...")
+        
+
         
         logger.info("✅ Simple Pipeline ready!")
     

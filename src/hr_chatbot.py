@@ -18,13 +18,12 @@ from classification.query_classifier import QueryClassifier
 from pipelines.simple_pipeline import SimplePipeline
 from pipelines.aggregation_pipeline import AggregationPipeline
 from pipelines.ultra_complex_pipeline import UltraComplexPipeline
-from typing import AsyncIterator, Dict, Any, Iterator
+from typing import AsyncIterator, Dict, Any
 import logging
 from datetime import datetime
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
 
 class HRChatbot:
     def __init__(self):

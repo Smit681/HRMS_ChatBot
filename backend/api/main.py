@@ -1,5 +1,3 @@
-from pathlib import Path
-import sys
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import logging

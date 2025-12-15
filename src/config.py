@@ -45,6 +45,13 @@ class Config:
     MAX_PARALLEL_WORKERS = 3     # Parallel LLM calls
     ULTRA_COMPLEX_TIMEOUT = 300  # 5 minutes max
 
+
+    # Redis Configuration
+    REDIS_HOST = "localhost"
+    REDIS_PORT = 6379
+    REDIS_DB = 0  # Use database 0 for chatbot cache
+    REDIS_CACHE_TTL_SECONDS = 3600  # 1 hour TTL for all cached entries
+
     # SYSTEM PROMPTS
     SYSTEM_PROMPTS = {
         'default': """You are an HR assistant for Itlize Global, LLC.
