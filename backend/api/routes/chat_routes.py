@@ -9,7 +9,12 @@ from pathlib import Path
 import json
 import logging
 
+
 from ..routes.auth_routes import get_current_user
+
+sys.path.append(str(Path(__file__).parent.parent.parent.parent / "backend" / "src"))
+from utils.entity_tracker import get_entity_tracker
+entity_tracker = get_entity_tracker()
 
 # Add parent directory to path to import chatbot
 sys.path.append(str(Path(__file__).parent.parent.parent.parent / "src"))
@@ -46,6 +51,18 @@ async def chat_stream(request: ChatRequest, current_user: dict = Depends(get_cur
     
     user_email = current_user["email"]
 
+    recent_conversation = chat_history.get_recent_conversation(user_email, limit=2)
+    entity_tracker.update_entity(user_email, recent_conversation[0]["query"] if recent_conversation else "", recent_conversation[0]["response"] if recent_conversation else "")
+
+    
+    original_query = request.query
+    resolved_query = entity_tracker.resolve_query(user_email, original_query)
+
+    print("\n\n\n\n\n\n\n\nResolved Query:", resolved_query)
+
+    if resolved_query != original_query:
+        logger.info(f"📝 Query resolved: '{original_query}' → '{resolved_query}'")
+
     # Add this custom encoder at the top of routes.py
     class SafeJSONEncoder(json.JSONEncoder):
         """Custom JSON encoder that handles MongoDB ObjectId and datetime"""
@@ -64,8 +81,9 @@ async def chat_stream(request: ChatRequest, current_user: dict = Depends(get_cur
         try:
             # Stream from chatbot
             async for chunk in chatbot.ask_stream(
-                query=request.query,
-                auto_confirm_ultra=request.auto_confirm_ultra
+                query= resolved_query,
+                auto_confirm_ultra=request.auto_confirm_ultra,
+                conversation_history=recent_conversation
             ):
                 # Convert chunk to dict if it's a Pydantic model
                 if hasattr(chunk, 'model_dump'):
@@ -101,7 +119,7 @@ async def chat_stream(request: ChatRequest, current_user: dict = Depends(get_cur
                 try:
                     chat_history.save_message(
                         user_email=user_email,
-                        query=request.query,
+                        query=resolved_query,
                         response=full_response,
                         query_type=query_type,
                         pipeline=pipeline

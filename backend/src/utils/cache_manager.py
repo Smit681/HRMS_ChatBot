@@ -44,7 +44,7 @@ class HybridCacheManager:
     """
     
     # Semantic cache settings
-    SEMANTIC_THRESHOLD = 0.90  # STRICT threshold - only very similar queries match
+    SEMANTIC_THRESHOLD = 0.85  # STRICT threshold - only very similar queries match
     MAX_SEMANTIC_CANDIDATES = 100  # Max cached queries to check
     
     # Critical keyword patterns that MUST match for cache hit
@@ -690,18 +690,24 @@ def main():
     
     # Cache PPO 1000 question
     cache.set(
-        query="What is the copay for PPO 1000 plan?",
+        query="When did employee 1504 joined the company?",
         answer="PPO 1000 has $35 copay for primary care.",
         metadata={'confidence': 0.95},
         query_type="simple"
     )
     
     # Try PPO 2500 (should MISS)
-    result = cache.get("What is the copay for PPO 2500 plan?", query_type="simple")
+    result = cache.get("What is the joining date of employee 1504?", query_type="simple")
     if result:
-        print(f"❌ FALSE MATCH: {result['original_query']}")
+        print("Cache hit")
     else:
-        print(f"✅ CORRECT MISS: Different plan names rejected")
+        print("Cache miss")
+    
+    result = cache.get("What is employee 1504's salary?", query_type="simple")
+    if result:
+        print("Cache hit")
+    else:
+        print("Cache miss")
     
     # Final stats
     print("\n" + "=" * 70)

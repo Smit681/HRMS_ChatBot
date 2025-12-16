@@ -4,7 +4,7 @@ Store user queries and responses in MongoDB
 """
 
 from datetime import datetime
-from typing import Optional
+from typing import Dict, List, Optional
 from pymongo import MongoClient, DESCENDING
 from bson import ObjectId
 import sys
@@ -65,6 +65,30 @@ class ChatHistory:
         
         # Reverse to show oldest first
         return list(history)
+    
+    def get_recent_conversation(self, user_email: str, limit: int = 2) -> List[Dict[str, str]]:
+        """
+        Get recent conversation turns for context
+        
+        Args:
+            user_email: User's email
+            limit: Number of recent turns (default: 2)
+        
+        Returns:
+            List of {query, response} pairs, newest first
+        """
+        messages = self.collection.find(
+            {"user_email": user_email}
+        ).sort("timestamp", DESCENDING).limit(limit)
+        
+        conversation = []
+        for msg in messages:
+            conversation.append({
+                "query": msg["query"],
+                "response": msg["response"]
+            })
+        
+        return list(conversation)
     
     def close(self):
         """Close MongoDB connection"""

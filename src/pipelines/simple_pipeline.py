@@ -23,7 +23,7 @@ from config import Config
 from retrieval.retrieval_engine import RetrievalEngine
 from retrieval.context_builder import ContextBuilder
 from retrieval.llm_interface import OllamaLLM
-from typing import AsyncIterator, Dict, Any
+from typing import AsyncIterator, Dict, Any, List
 
 import logging
 
@@ -120,7 +120,7 @@ class SimplePipeline:
         logger.info(f"✅ Query complete (confidence: {confidence:.2f})")
         return result
     
-    async def process_stream(self, query: str) -> AsyncIterator[dict]:
+    async def process_stream(self, query:str, conversation_history: List[Dict[str, str]] = None) -> AsyncIterator[dict]:
         """
         Process query with streaming response
         
@@ -196,8 +196,11 @@ class SimplePipeline:
         prompt = self.context_builder.build_prompt(
             query=query,
             context=context,
-            system_prompt=Config.SYSTEM_PROMPTS['default']
+            system_prompt=Config.SYSTEM_PROMPTS['default'],
+            conversation_history=conversation_history
         )
+
+        logger.info("\n\n\n" + prompt + "\n\n\n")
 
         full_answer = ""        
         # Stream tokens

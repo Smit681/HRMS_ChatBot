@@ -20,7 +20,7 @@ from config import Config
 from retrieval.llm_interface import OllamaLLM
 from retrieval.context_builder import ContextBuilder
 from agents.mongodb_query_agent import MongoDBQueryAgent
-from typing import AsyncIterator, Dict, Any, Iterator
+from typing import AsyncIterator, Dict, Any, Iterator, List
 import json
 import logging
 
@@ -90,7 +90,7 @@ class AggregationPipeline:
         logger.info("✅ Query complete")
         return result
     
-    async def process_stream(self, query: str) -> AsyncIterator[dict]:
+    async def process_stream(self, query: str,conversation_history: List[Dict[str, str]] = None) -> AsyncIterator[dict]:
         """
         Process aggregation query with streaming
         
@@ -128,7 +128,8 @@ class AggregationPipeline:
         prompt = self.context_builder.build_prompt(
             query=query,
             context=context,
-            system_prompt=Config.SYSTEM_PROMPTS['aggregation']
+            system_prompt=Config.SYSTEM_PROMPTS['aggregation'],
+            conversation_history=conversation_history
         )
         
         # Stream tokens

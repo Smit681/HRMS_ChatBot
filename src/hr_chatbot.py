@@ -18,7 +18,7 @@ from classification.query_classifier import QueryClassifier
 from pipelines.simple_pipeline import SimplePipeline
 from pipelines.aggregation_pipeline import AggregationPipeline
 from pipelines.ultra_complex_pipeline import UltraComplexPipeline
-from typing import AsyncIterator, Dict, Any
+from typing import AsyncIterator, Dict, Any, List
 import logging
 from datetime import datetime
 
@@ -163,7 +163,8 @@ class HRChatbot:
     async def ask_stream(
     self,
     query: str,
-    auto_confirm_ultra: bool = False
+    auto_confirm_ultra: bool = False,
+    conversation_history: List[Dict[str, str]] = None
 ) -> AsyncIterator[dict]:
         """
         Ask a question with streaming response
@@ -204,17 +205,17 @@ class HRChatbot:
             #     return
             
             # Stream ultra-complex pipeline
-            async for chunk in self.ultra_complex_pipeline.process_stream(query):
+            async for chunk in self.ultra_complex_pipeline.process_stream(query,                    conversation_history=conversation_history):
                 yield chunk
         
         elif query_type == 'aggregation':
             # Stream aggregation pipeline
-            async for chunk in self.aggregation_pipeline.process_stream(query):
+            async for chunk in self.aggregation_pipeline.process_stream(query, conversation_history=conversation_history):
                 yield chunk
         
         else:  # simple
             # Stream simple pipeline
-            async for chunk in self.simple_pipeline.process_stream(query):
+            async for chunk in self.simple_pipeline.process_stream(query, conversation_history=conversation_history):
                 yield chunk
         
         # Final completion message

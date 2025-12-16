@@ -55,7 +55,7 @@ class UltraComplexPipeline:
         
         logger.info("✅ Ultra-Complex Pipeline ready!")
     
-    async def process_stream(self, query: str) -> AsyncIterator[dict]:
+    async def process_stream(self, query: str, conversation_history: List[Dict[str, str]] = None) -> AsyncIterator[dict]:
         """
         Process ultra-complex query with streaming synthesis
         
@@ -140,7 +140,8 @@ class UltraComplexPipeline:
         prompt = self.context_builder.build_prompt(
             query=query,
             context=context,
-            system_prompt=Config.SYSTEM_PROMPTS['synthesis']
+            system_prompt=Config.SYSTEM_PROMPTS['synthesis'],
+            conversation_history=conversation_history
         )
         
         # Stream the final answer token by token

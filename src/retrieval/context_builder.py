@@ -159,11 +159,40 @@ class ContextBuilder:
         
         return "\n".join(context_parts)
     
+    def format_conversation_history(
+    self,
+    conversation_history: List[Dict[str, str]]) -> str:
+        """
+        Format conversation history for LLM context
+        
+        Args:
+            conversation_history: List of {query, response} dicts
+        
+        Returns:
+            Formatted conversation string
+        """
+        if not conversation_history:
+            return ""
+        
+        context_parts = []
+        context_parts.append("Recent Conversation:")
+        context_parts.append("-" * 50)
+        
+        for i, turn in enumerate(conversation_history, 1):
+            context_parts.append(f"\nUser (Turn {i}): {turn['query']}")
+            context_parts.append(f"Assistant (Turn {i}): {turn['response']}")
+        
+        context_parts.append("-" * 50)
+        context_parts.append("")
+        
+        return "\n".join(context_parts)
+    
     def build_prompt(
         self,
         query: str,
         context: str,
-        system_prompt: str = None
+        system_prompt: str = None,
+        conversation_history: List[Dict[str, str]] = None
     ) -> str:
         """
         Build complete prompt for LLM
@@ -185,6 +214,11 @@ class ContextBuilder:
             prompt_parts.append(Config.SYSTEM_PROMPTS['default'])
         
         prompt_parts.append("")
+
+        if conversation_history:
+            history_context = self.format_conversation_history(conversation_history)
+            if history_context:
+                prompt_parts.append(history_context)
         
         # Context
         prompt_parts.append(context)

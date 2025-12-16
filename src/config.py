@@ -54,11 +54,7 @@ class Config:
 
     # SYSTEM PROMPTS
     SYSTEM_PROMPTS = {
-        'default': """You are an HR assistant for Itlize Global, LLC.
-    Answer questions accurately based on the provided context.
-    Be concise, professional, and helpful.
-    If the answer is not in the context, say so clearly.
-    Cite your sources.""",
+        'default': """You are an HR assistant for Itlize Global, LLC. Answer questions accurately based on the provided context. Be concise, professional, and helpful. If the user's question references previous conversation (e.g., "what about that employee", "the same plan"), use the recent conversation history to understand the full context. If query is asking about certain employee information, company policy, health/dental insurance without giving identifing information, check the recent conversations to idenfy which employee, policy, insurance the query is referring to. Provide clear, concise answers. If the answer is not in the context, say so clearly.""",
         
         'aggregation': """You are an HR analytics assistant.
     Answer using the provided context and calculation results.
